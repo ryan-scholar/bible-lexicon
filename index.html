@@ -166,7 +166,7 @@ details.pick label{font-family:var(--mono);font-size:.72rem;display:flex;gap:4px
 </main>
 
 <footer>
-  <div><span class="tag src">Sourced</span> Text and lexicon entries are fetched live from bolls.life each time; nothing is stored. Tap a word in KJV, ASV or WLCa for its Strong's entry; tap a verse number for the verse across translations. Footnotes are still hidden in this phase.</div>
+  <div><span class="tag src">Sourced</span> Text and lexicon entries are fetched live from bolls.life each time; nothing is stored. Tap a word in KJV, ASV, WLCa or SBLGNT for its Strong's entry; tap a verse number for the verse across translations. Footnotes are still hidden in this phase.</div>
   <div>Translation groupings (literal / middle / dynamic / paraphrase) follow the publishers' own descriptions and common classification; they are labels, not measurements.</div>
 </footer>
 
@@ -176,16 +176,16 @@ const BOOKS = [["Genesis",50],["Exodus",40],["Leviticus",27],["Numbers",36],["De
 
 // code → [label, group, script]. Codes are bolls.life slugs. Group order = the spectrum, most literal first.
 const TRANSLATIONS = {
-  "— Originals —":[["WLCa","Hebrew — WLC with Strong's","he"],["WLC","Hebrew — Westminster Leningrad (vowels)","he"],["WLCC","Hebrew — WLC consonants","he"],["SBLGNT","Greek — SBL GNT 2010","el"],["NA28","Greek — Nestle-Aland 28","el"],["TR","Greek — Textus Receptus 1624","el"],["LXX","Greek — Septuagint","el"],["LXXE","Septuagint in English (1851)"]],
+  "— Originals —":[["WLCa","Hebrew — WLC with Strong's","he"],["WLC","Hebrew — Westminster Leningrad (vowels)","he"],["WLCC","Hebrew — WLC consonants","he"],["SBLGNT","Greek — SBL GNT 2010 with Strong's","el"],["NA28","Greek — Nestle-Aland 28","el"],["TR","Greek — Textus Receptus 1624","el"],["LXX","Greek — Septuagint","el"],["LXXE","Septuagint in English (1851)"]],
   "— Literal (word for word) —":[["LSB","Legacy Standard Bible"],["NASB","NASB 1995"],["ESV","ESV"],["NKJV","NKJV"],["KJV","KJV 1769"],["ASV","ASV 1901"],["YLT","Young's Literal"],["LSV","Literal Standard Version"]],
-  "— Middle —":[["CSB17","CSB 2017"],["NET","NET Bible"],["BSB","Berean Standard Bible"],["WEB","World English Bible"],["NIV2011","NIV 2011"]],
+  "— Middle —":[["CSB17","CSB 2017"],["NET","NET Bible"],["BSB","Berean Standard Bible"],["WEB","World English Bible"]],
   "— Dynamic (thought for thought) —":[["NLT","NLT 2015"],["AMP","Amplified"]],
   "— Paraphrase —":[["MSG","The Message"]],
 };
-const TAGGED = new Set(["KJV","ASV","WLCa"]); // texts bolls serves with <S>n</S> Strong's tags
+const TAGGED = new Set(["KJV","ASV","WLCa","SBLGNT"]); // texts bolls serves with <S>n</S> Strong's tags
 const SCRIPT = {}, LABEL = {}, ORDER = {}; let oi=0;
 for (const g of Object.values(TRANSLATIONS)) for (const [c,l,s] of g) { SCRIPT[c]=s||"en"; LABEL[c]=l; ORDER[c]=oi++; }
-const VERSION_DEFAULT = ["WLCa","SBLGNT","KJV","ESV","NET","NIV2011","NLT","MSG"];
+const VERSION_DEFAULT = ["WLCa","SBLGNT","KJV","ESV","NET","NLT","MSG"];
 
 const $ = id => document.getElementById(id);
 const els = { book:$("book"), chapter:$("chapter"), vfrom:$("vfrom"), vto:$("vto"), ta:$("ta"), tb:$("tb"), view:$("view"), title:$("title"), meta:$("meta"), dbody:$("dbody"), recent:$("recent") };
@@ -250,7 +250,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&
 function clean(html, book, tagged){
   let s = String(html||"")
     .replace(/<e>.*?<\/e>/gs,"").replace(/<f>.*?<\/f>/gs,"<span class=\"fn\">†</span>")
-    .replace(/<sup>.*?<\/sup>/gs,"")
+    .replace(/<sup>.*?<\/sup>/gs,"").replace(/<m>.*?<\/m>/gs,"")
     .replace(/<br\s*\/?>/gi," ");
   if (!tagged) {
     return s.replace(/<S>\d+<\/S>/gi,"").replace(/<(?!\/?i\b|span class="fn"|\/span)[^>]+>/g,"").replace(/\s+/g," ").trim();
@@ -383,7 +383,7 @@ async function renderOriginal(){
       const anyTagged = [...document.querySelectorAll(`.v[data-v="${cur.v}"] .w`)];
       d.innerHTML = `<h2>${ref}</h2><p class="sub">${esc(cur.code)} carries no Strong's numbers on bolls.</p>` + (anyTagged.length
         ? `<p>The other column does — tap a word there, or pick from it:</p><div class="wl">${anyTagged.map(w=>`<button data-s="${w.dataset.s.split(" ")[0]}">${esc(w.textContent.trim())}<small>${w.dataset.s.split(" ")[0]}</small></button>`).join("")}</div>`
-        : `<p>Switch A or B to <b>KJV</b>, <b>ASV</b> or <b>WLCa</b> to tap words.</p>`) + interCtl;
+        : `<p>Switch A or B to <b>KJV</b>, <b>ASV</b>, <b>WLCa</b> or <b>SBLGNT</b> to tap words.</p>`) + interCtl;
     } else {
       d.innerHTML = `<h2>${ref}</h2><p class="sub">Words in ${esc(cur.code)} — pick one</p><div class="wl">${tagged.map(w=>`<button data-s="${w.dataset.s.split(" ")[0]}">${esc(w.textContent.trim())}<small>${w.dataset.s.split(" ")[0]}</small></button>`).join("")}</div>` + interCtl;
     }
@@ -417,7 +417,8 @@ function bindOriginal(){
 let picks = lsGet("lex.versions", VERSION_DEFAULT);
 async function renderVersion(){
   const d=els.dbody; const ref=`${BOOKS[cur.b-1][0]} ${cur.c}:${cur.v}`; const s=state();
-  const set=[...new Set([s.a, s.bb, ...picks].filter(Boolean))].sort((x,y)=>ORDER[x]-ORDER[y]);
+  const nt=cur.b>=40; const offTestament=c=>(SCRIPT[c]==="he"&&nt)||(["SBLGNT","NA28","TR"].includes(c)&&!nt);
+  const set=[...new Set([s.a, s.bb, ...picks].filter(Boolean))].filter(c=>c===s.a||c===s.bb||!offTestament(c)).sort((x,y)=>ORDER[x]-ORDER[y]);
   const pickHtml = `<details class="pick"><summary>Translations shown (${set.length})</summary><div class="opts">${Object.keys(ORDER).map(c=>`<label><input type="checkbox" data-c="${c}" ${set.includes(c)?"checked":""} ${c===s.a||c===s.bb?"disabled":""}>${c}</label>`).join("")}</div></details>`;
   d.innerHTML = `<h2>${ref}</h2><p class="sub">${cur.s?`${esc(cur.word)} · ${cur.s} highlighted where the text carries numbers`:"Most literal at the top, freest at the bottom"}</p>${pickHtml}<div class="state loading">Fetching ${set.length} translations…</div>`;
   d.querySelectorAll(".pick input").forEach(i=>i.addEventListener("change", ()=>{ picks = [...d.querySelectorAll(".pick input:checked")].map(x=>x.dataset.c); lsSet("lex.versions", picks); renderVersion(); }));
@@ -432,7 +433,7 @@ async function renderVersion(){
     const cls = SCRIPT[code]==="he"?"rtl":SCRIPT[code]==="el"?"grk":"";
     h += `<div class="vrow ${code===cur.code?"cur":""}"><div class="ab"><b>${code}</b>${code===cur.code?"current":""}</div><div class="t ${cls}">${text===null?`<span class="sub">not available</span>`:(text||`<span class="sub">—</span>`)}</div></div>`;
   }
-  const st=d.querySelector(".state"); if (st) st.outerHTML = h + `<p class="sub" style="margin-top:10px"><span class="tag src">Sourced</span> Verse-level only: bolls tags Strong's numbers in KJV, ASV and WLCa, so words can't be aligned across the other translations.</p>`;
+  const st=d.querySelector(".state"); if (st) st.outerHTML = h + `<p class="sub" style="margin-top:10px"><span class="tag src">Sourced</span> Verse-level only: bolls tags Strong's numbers in KJV, ASV, WLCa and SBLGNT, so words can't be aligned across the other translations.</p>`;
   if (cur.s) d.querySelectorAll(`.vrow .w[data-s~="${cur.s}"]`).forEach(x=>x.classList.add("echo"));
   d.querySelectorAll(".vrow .w").forEach(w=>w.addEventListener("click", ()=>{ cur={...cur, s:w.dataset.s.split(" ")[0], all:w.dataset.s.split(" "), word:w.textContent.trim()}; tab="original"; showTab(); }));
 }
