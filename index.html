@@ -6,14 +6,15 @@
 <title>Lexicon</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Hebrew:wght@400&display=swap">
 <style>
-/* Layout: a sticky toolbar (passage + translations), then a verse grid — one column alone, two aligned columns in compare. */
+/* Layout: a sticky toolbar (passage + translations), then a verse grid — one column alone, two aligned columns in compare.
+   Phase 2: tap a word or verse number → chooser (Original · Version · Commentary · Study) → study drawer (right column / bottom sheet). */
 :root{
   --bg:#f7f5f0; --fg:#23211c; --muted:#6f6a5e; --line:#dcd7cb; --panel:#fffdf8; --panel-2:#f1ede4;
-  --accent:#3b5f8a; --accent-ink:#f7f5f0; --bad:#a63a2f; --bad-bg:#f6e0dc;
+  --accent:#3b5f8a; --accent-ink:#f7f5f0; --bad:#a63a2f; --bad-bg:#f6e0dc; --echo:rgba(59,95,138,.18);
   --serif:"Source Serif 4",Georgia,serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --hebrew:"Noto Serif Hebrew","Times New Roman",serif;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1915;--fg:#ece8df;--muted:#a39d8f;--line:#38362f;--panel:#23221d;--panel-2:#2b2a24;--accent:#8db1dc;--accent-ink:#1a1915;--bad:#ef8a7d;--bad-bg:#3d221e;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#1a1915;--fg:#ece8df;--muted:#a39d8f;--line:#38362f;--panel:#23221d;--panel-2:#2b2a24;--accent:#8db1dc;--accent-ink:#1a1915;--bad:#ef8a7d;--bad-bg:#3d221e;color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1915;--fg:#ece8df;--muted:#a39d8f;--line:#38362f;--panel:#23221d;--panel-2:#2b2a24;--accent:#8db1dc;--accent-ink:#1a1915;--bad:#ef8a7d;--bad-bg:#3d221e;--echo:rgba(141,177,220,.22);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1a1915;--fg:#ece8df;--muted:#a39d8f;--line:#38362f;--panel:#23221d;--panel-2:#2b2a24;--accent:#8db1dc;--accent-ink:#1a1915;--bad:#ef8a7d;--bad-bg:#3d221e;--echo:rgba(141,177,220,.22);color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--serif);font-size:17px;line-height:1.55}
@@ -28,7 +29,7 @@ button.quiet{background:transparent;color:var(--muted)}
 .grp{display:flex;gap:4px;align-items:center}
 .grp .lbl{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:2px}
 .sep{color:var(--muted);font-family:var(--mono);font-size:.8rem}
-main{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 56px}
+main{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 56px;position:relative}
 .ref{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .ref h1{font-size:1.5rem;font-weight:600;margin:0;text-wrap:balance}
 .ref .meta{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
@@ -39,18 +40,85 @@ main{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-le
 .heads .n{visibility:hidden}
 .v{display:contents}
 .v>*{padding-block:6px;border-bottom:1px solid var(--line)}
-.v .n{font-family:var(--mono);font-size:.72rem;color:var(--muted);padding-top:10px;font-variant-numeric:tabular-nums}
-.v .t{min-width:0;overflow-wrap:anywhere}
+.v .n{font-family:var(--mono);font-size:.72rem;color:var(--muted);padding-top:10px;font-variant-numeric:tabular-nums;cursor:pointer;user-select:none}
+.v .n:hover{color:var(--accent)}
+.v .t{min-width:0;overflow-wrap:anywhere;cursor:pointer}
 .v .t.rtl{direction:rtl;text-align:right;font-family:var(--hebrew);font-size:1.25em;line-height:1.7}
 .v .t.grk{font-size:1.05em}
 .v .t:empty::before{content:"—";color:var(--muted)}
 .t i{font-style:italic;color:var(--muted)}
 .t .fn{font-family:var(--mono);font-size:.65rem;color:var(--accent);vertical-align:super;margin-inline:1px}
+/* tappable words (texts with Strong's numbers) */
+.w{border-radius:2px;transition:background .12s}
+.w:hover{background:var(--panel-2)}
+.w.echo{background:var(--echo)}
+.w.sel{box-shadow:0 0 0 2px var(--accent);background:var(--echo)}
+body.inter .w{display:inline-block;text-align:center;vertical-align:top;margin-inline:1px}
+body.inter .w::after{content:attr(data-s);display:block;font-family:var(--mono);font-size:.58rem;color:var(--muted);line-height:1.1;letter-spacing:0}
+body.inter .t.rtl .w::after{direction:ltr}
 .state{font-family:var(--mono);font-size:.82rem;color:var(--muted);padding:24px 0}
 .err{background:var(--bad-bg);color:var(--bad);border-radius:3px;padding:10px 12px;font-size:.9rem}
 .nav{display:flex;justify-content:space-between;gap:8px;margin-top:22px}
-footer{max-width:1100px;margin:28px auto 0;font-family:var(--mono);font-size:.68rem;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;display:grid;gap:4px}
-.tag{display:inline-block;border:1px solid var(--line);border-radius:2px;padding:1px 6px;letter-spacing:.06em;text-transform:uppercase}
+footer{max-width:1100px;margin:28px auto 0;font-family:var(--mono);font-size:.68rem;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;display:grid;gap:4px;padding-inline:16px}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:2px;padding:1px 6px;letter-spacing:.06em;text-transform:uppercase;font-family:var(--mono);font-size:.62rem;color:var(--muted);vertical-align:middle}
+.tag.src{border-color:var(--accent);color:var(--accent)}
+/* chooser */
+.chooser{position:absolute;z-index:20;background:var(--panel);border:1px solid var(--line);border-radius:4px;box-shadow:0 8px 28px rgba(0,0,0,.18);display:flex;flex-direction:column;min-width:170px;overflow:hidden}
+.chooser .hd{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:7px 12px 3px;border-bottom:1px solid var(--line);white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.chooser button{border:0;border-radius:0;background:transparent;text-align:left;padding:9px 12px;font-family:var(--serif);font-size:.95rem;display:flex;justify-content:space-between;gap:12px}
+.chooser button:hover{background:var(--panel-2)}
+.chooser button small{font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;align-self:center}
+/* drawer */
+#drawer{display:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden;flex-direction:column}
+body.open #drawer{display:flex}
+.dhead{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line);padding:4px 6px}
+.tabs{display:flex;gap:0;flex:1;overflow-x:auto}
+.tabs button{border:0;background:transparent;color:var(--muted);padding:8px 9px;font-family:var(--serif);font-size:.9rem;border-radius:0;white-space:nowrap}
+.tabs button.on{color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent)}
+.dbody{overflow:auto;padding:12px 14px;font-size:.95rem;flex:1;overscroll-behavior:contain}
+.dbody h2{font-size:1.25rem;margin:0 0 2px;font-weight:600}
+.dbody h3{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px;font-weight:500}
+.dbody p{margin:.35em 0}
+.dbody ol{padding-left:1.3em;margin:.3em 0}
+.dbody a{color:var(--accent)}
+.dbody .lex{font-size:1.5rem;line-height:1.3}
+.dbody .lex.heb{font-family:var(--hebrew);direction:rtl;display:inline-block}
+.dbody .sub{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.dbody .def{border-top:1px solid var(--line);margin-top:10px;padding-top:8px;font-size:.92rem}
+.dbody .def el,.dbody .def .grk{font-size:1.05em}
+.dbody .def he,.dbody .def .heb{font-family:var(--hebrew);font-size:1.1em}
+.dbody .def a[data-s]{text-decoration:none;border-bottom:1px dotted var(--accent)}
+.dbody .ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.dbody .ctl label{font-family:var(--mono);font-size:.74rem;color:var(--muted);display:flex;gap:5px;align-items:center}
+.wl{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.wl button{font-family:var(--serif);font-size:.9rem;padding:4px 8px}
+.wl button small{font-family:var(--mono);font-size:.62rem;color:var(--muted);margin-left:5px}
+.vrow{display:grid;grid-template-columns:5.5em 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.vrow .ab{font-family:var(--mono);font-size:.68rem;color:var(--muted);padding-top:4px;letter-spacing:.04em}
+.vrow .ab b{display:block;color:var(--fg);font-weight:500}
+.vrow.cur{background:var(--panel-2);margin-inline:-14px;padding-inline:14px}
+.vrow .t{cursor:default}
+.vrow .t.rtl{direction:rtl;text-align:right;font-family:var(--hebrew);font-size:1.2em;line-height:1.6}
+.vrow .w{cursor:pointer}
+.spec{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:10px 0 0}
+details.pick{margin:6px 0 2px}
+details.pick summary{font-family:var(--mono);font-size:.74rem;color:var(--muted);cursor:pointer}
+details.pick .opts{display:flex;flex-wrap:wrap;gap:4px 10px;padding:6px 0}
+details.pick label{font-family:var(--mono);font-size:.72rem;display:flex;gap:4px;align-items:center}
+.recent{display:flex;gap:4px;flex-wrap:wrap;padding:6px 8px;border-top:1px solid var(--line);background:var(--bg)}
+.recent .lbl{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);align-self:center;margin-right:2px}
+.recent button{font-size:.72rem;padding:3px 7px;font-family:var(--serif)}
+.recent button small{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-left:4px}
+.soon{color:var(--muted);font-style:italic}
+@media (min-width:900px){
+  body.open main{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:24px;align-items:start}
+  body.open #drawer{position:sticky;top:70px;max-height:calc(100vh - 92px)}
+}
+@media (max-width:899px){
+  body.open #drawer{position:fixed;left:0;right:0;bottom:0;z-index:15;max-height:58vh;border-radius:12px 12px 0 0;border-bottom:0;box-shadow:0 -8px 28px rgba(0,0,0,.22);padding-bottom:env(safe-area-inset-bottom,0px)}
+  body.open main{padding-bottom:62vh}
+  body.open footer{display:none}
+}
 @media (max-width:640px){
   body{font-size:16px}
   .two .heads{display:none}
@@ -77,13 +145,28 @@ footer{max-width:1100px;margin:28px auto 0;font-family:var(--mono);font-size:.68
 </header>
 
 <main>
-  <div class="ref"><h1 id="title">Loading…</h1><span class="meta" id="meta"></span></div>
-  <div id="view" class="one"></div>
-  <div class="nav"><button id="prev" class="quiet">← Previous chapter</button><button id="next" class="quiet">Next chapter →</button></div>
+  <div id="reader">
+    <div class="ref"><h1 id="title">Loading…</h1><span class="meta" id="meta"></span></div>
+    <div id="view" class="one"></div>
+    <div class="nav"><button id="prev" class="quiet">← Previous chapter</button><button id="next" class="quiet">Next chapter →</button></div>
+  </div>
+  <aside id="drawer" aria-label="Study drawer">
+    <div class="dhead">
+      <div class="tabs" role="tablist">
+        <button data-tab="original" role="tab">Original</button>
+        <button data-tab="version" role="tab">Version</button>
+        <button data-tab="commentary" role="tab">Commentary</button>
+        <button data-tab="study" role="tab">Study</button>
+      </div>
+      <button id="dclose" class="quiet" title="Close" aria-label="Close drawer">✕</button>
+    </div>
+    <div class="dbody" id="dbody"></div>
+    <div class="recent" id="recent" hidden></div>
+  </aside>
 </main>
 
 <footer>
-  <div><span class="tag">Sourced</span> Text is fetched live from bolls.life each time you read; nothing is stored. Footnote markers and Strong's numbers are hidden in this phase.</div>
+  <div><span class="tag src">Sourced</span> Text and lexicon entries are fetched live from bolls.life each time; nothing is stored. Tap a word in KJV, ASV or WLCa for its Strong's entry; tap a verse number for the verse across translations. Footnotes are still hidden in this phase.</div>
   <div>Translation groupings (literal / middle / dynamic / paraphrase) follow the publishers' own descriptions and common classification; they are labels, not measurements.</div>
 </footer>
 
@@ -91,20 +174,23 @@ footer{max-width:1100px;margin:28px auto 0;font-family:var(--mono);font-size:.68
 // ---- Data: Protestant canon in bolls.life book order (1–66) with chapter counts ----
 const BOOKS = [["Genesis",50],["Exodus",40],["Leviticus",27],["Numbers",36],["Deuteronomy",34],["Joshua",24],["Judges",21],["Ruth",4],["1 Samuel",31],["2 Samuel",24],["1 Kings",22],["2 Kings",25],["1 Chronicles",29],["2 Chronicles",36],["Ezra",10],["Nehemiah",13],["Esther",10],["Job",42],["Psalms",150],["Proverbs",31],["Ecclesiastes",12],["Song of Songs",8],["Isaiah",66],["Jeremiah",52],["Lamentations",5],["Ezekiel",48],["Daniel",12],["Hosea",14],["Joel",3],["Amos",9],["Obadiah",1],["Jonah",4],["Micah",7],["Nahum",3],["Habakkuk",3],["Zephaniah",3],["Haggai",2],["Zechariah",14],["Malachi",4],["Matthew",28],["Mark",16],["Luke",24],["John",21],["Acts",28],["Romans",16],["1 Corinthians",16],["2 Corinthians",13],["Galatians",6],["Ephesians",6],["Philippians",4],["Colossians",4],["1 Thessalonians",5],["2 Thessalonians",3],["1 Timothy",6],["2 Timothy",4],["Titus",3],["Philemon",1],["Hebrews",13],["James",5],["1 Peter",5],["2 Peter",3],["1 John",5],["2 John",1],["3 John",1],["Jude",1],["Revelation",22]];
 
-// code → [label, group, script]. Codes are bolls.life slugs.
+// code → [label, group, script]. Codes are bolls.life slugs. Group order = the spectrum, most literal first.
 const TRANSLATIONS = {
+  "— Originals —":[["WLCa","Hebrew — WLC with Strong's","he"],["WLC","Hebrew — Westminster Leningrad (vowels)","he"],["WLCC","Hebrew — WLC consonants","he"],["SBLGNT","Greek — SBL GNT 2010","el"],["NA28","Greek — Nestle-Aland 28","el"],["TR","Greek — Textus Receptus 1624","el"],["LXX","Greek — Septuagint","el"],["LXXE","Septuagint in English (1851)"]],
   "— Literal (word for word) —":[["LSB","Legacy Standard Bible"],["NASB","NASB 1995"],["ESV","ESV"],["NKJV","NKJV"],["KJV","KJV 1769"],["ASV","ASV 1901"],["YLT","Young's Literal"],["LSV","Literal Standard Version"]],
   "— Middle —":[["CSB17","CSB 2017"],["NET","NET Bible"],["BSB","Berean Standard Bible"],["WEB","World English Bible"],["NIV2011","NIV 2011"]],
   "— Dynamic (thought for thought) —":[["NLT","NLT 2015"],["AMP","Amplified"]],
   "— Paraphrase —":[["MSG","The Message"]],
-  "— Originals —":[["WLC","Hebrew — Westminster Leningrad (vowels)","he"],["WLCC","Hebrew — WLC consonants","he"],["SBLGNT","Greek — SBL GNT 2010","el"],["NA28","Greek — Nestle-Aland 28","el"],["TR","Greek — Textus Receptus 1624","el"],["LXX","Greek — Septuagint","el"],["LXXE","Septuagint in English (1851)"]],
 };
-const SCRIPT = {}; for (const g of Object.values(TRANSLATIONS)) for (const [c,,s] of g) SCRIPT[c]=s||"en";
-const LABEL = {}; for (const g of Object.values(TRANSLATIONS)) for (const [c,l] of g) LABEL[c]=l;
+const TAGGED = new Set(["KJV","ASV","WLCa"]); // texts bolls serves with <S>n</S> Strong's tags
+const SCRIPT = {}, LABEL = {}, ORDER = {}; let oi=0;
+for (const g of Object.values(TRANSLATIONS)) for (const [c,l,s] of g) { SCRIPT[c]=s||"en"; LABEL[c]=l; ORDER[c]=oi++; }
+const VERSION_DEFAULT = ["WLCa","SBLGNT","KJV","ESV","NET","NIV2011","NLT","MSG"];
 
 const $ = id => document.getElementById(id);
-const els = { book:$("book"), chapter:$("chapter"), vfrom:$("vfrom"), vto:$("vto"), ta:$("ta"), tb:$("tb"), view:$("view"), title:$("title"), meta:$("meta") };
-const cache = new Map(); // in-memory for this tab only
+const els = { book:$("book"), chapter:$("chapter"), vfrom:$("vfrom"), vto:$("vto"), ta:$("ta"), tb:$("tb"), view:$("view"), title:$("title"), meta:$("meta"), dbody:$("dbody"), recent:$("recent") };
+const cache = new Map();   // chapters, in-memory for this tab only
+const dcache = new Map();  // Strong's entries
 
 function fillSelects(){
   BOOKS.forEach(([n],i)=>{ const o=document.createElement("option"); o.value=i+1; o.textContent=n; els.book.appendChild(o); });
@@ -122,7 +208,6 @@ function fillChapters(){
   els.chapter.innerHTML=""; for (let i=1;i<=n;i++){ const o=document.createElement("option"); o.value=i; o.textContent=i; els.chapter.appendChild(o); }
   els.chapter.value = Math.min(cur,n);
 }
-
 function fillVerses(nums){
   const f=els.vfrom.value, t=els.vto.value;
   els.vfrom.innerHTML='<option value="">1</option>'; els.vto.innerHTML='<option value="">end</option>';
@@ -136,6 +221,8 @@ function applyState(s){
 }
 function savePrefs(){ try{ localStorage.setItem("lex.state", JSON.stringify(state())); }catch{} }
 function loadPrefs(){ try{ return JSON.parse(localStorage.getItem("lex.state")||"null"); }catch{ return null; } }
+function lsGet(k,d){ try{ const v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }catch{ return d; } }
+function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} }
 function toHash(s){ const bk=BOOKS[s.b-1][0].replace(/\s+/g,""); const vv=s.f?(s.t&&s.t!==s.f?`${s.f}-${s.t}`:`${s.f}`):""; return `#${bk}.${s.c}${vv?"."+vv:""}.${s.a}${s.bb?"."+s.bb:""}`; }
 function fromHash(h){
   const m=(h||"").replace(/^#/,"").split("."); if (m.length<3) return null;
@@ -150,14 +237,38 @@ async function chapter(code,b,c){
   if (!res.ok) throw new Error(`${code}: server answered ${res.status}`);
   const j = await res.json(); cache.set(key,j); return j;
 }
-function clean(html){
-  // Keep italics, drop Strong's tags and footnote bodies (Phase 2 will surface them).
-  return String(html||"")
-    .replace(/<S>\d+<\/S>/g,"").replace(/<s>\d+<\/s>/g,"")
+async function strongs(id){
+  if (dcache.has(id)) return dcache.get(id);
+  const res = await fetch(`https://bolls.life/dictionary-definition/BDBT/${id}/`);
+  if (!res.ok) throw new Error(`lexicon: server answered ${res.status}`);
+  const j = await res.json(); const e = Array.isArray(j)?j[0]:j; dcache.set(id,e||null); return e||null;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// bolls markup: the Strong's tag FOLLOWS the word or phrase it belongs to ("thou art<S>2064</S>").
+// Numbers carry no testament prefix; books 1–39 are Hebrew (H), 40–66 Greek (G).
+function clean(html, book, tagged){
+  let s = String(html||"")
     .replace(/<e>.*?<\/e>/gs,"").replace(/<f>.*?<\/f>/gs,"<span class=\"fn\">†</span>")
-    .replace(/<br\s*\/?>/gi," ")
-    .replace(/<(?!\/?i\b|span class="fn"|\/span)[^>]+>/g,"")
-    .replace(/\s+/g," ").trim();
+    .replace(/<sup>.*?<\/sup>/gs,"")
+    .replace(/<br\s*\/?>/gi," ");
+  if (!tagged) {
+    return s.replace(/<S>\d+<\/S>/gi,"").replace(/<(?!\/?i\b|span class="fn"|\/span)[^>]+>/g,"").replace(/\s+/g," ").trim();
+  }
+  const pre = book<=39?"H":"G"; let out=""; let last=0; let lastSpanOpen=-1;
+  const re=/<S>(\d+)<\/S>/gi; let m;
+  while ((m=re.exec(s))) {
+    const chunk = s.slice(last, m.index); const num = pre+m[1]; last = re.lastIndex;
+    if (!chunk.trim() && lastSpanOpen>=0) { // a second number on the same word: add it to the previous span
+      out = out.slice(0,lastSpanOpen) + out.slice(lastSpanOpen).replace(/data-s="([^"]*)"/, (_,v)=>`data-s="${v} ${num}"`) + chunk; continue;
+    }
+    const lead = chunk.match(/^[\s\p{P}]*/u)[0]; const body = chunk.slice(lead.length);
+    if (!body) { out += chunk; lastSpanOpen=-1; continue; } // a number with no English word (untranslated particle) — drop it
+    lastSpanOpen = out.length + lead.length;
+    out += `${lead}<span class="w" data-s="${num}">${body}</span>`;
+  }
+  out += s.slice(last);
+  return out.replace(/<(?!\/?i\b|span class="fn"|span class="w"[^>]*|\/span)[^>]+>/g,"").replace(/[ \t\r\n]+/g," ").trim();
 }
 
 let busy=false;
@@ -180,9 +291,10 @@ async function render(push=true){
     const cls=code=>SCRIPT[code]==="he"?"rtl":SCRIPT[code]==="el"?"grk":"";
     let h = `<div class="heads"><span class="n">#</span><span>${s.a} · ${LABEL[s.a]}</span>${two?`<span>${s.bb} · ${LABEL[s.bb]}</span>`:""}</div><div class="grid">`;
     for (const v of verses) {
-      h += `<div class="v"><span class="n">${v}</span><div class="t a ${cls(s.a)}" data-abbr="${s.a}">${clean(a[v])}</div>${two?`<div class="t b ${cls(s.bb)}" data-abbr="${s.bb}">${clean(b[v])}</div>`:""}</div>`;
+      h += `<div class="v" data-v="${v}"><span class="n">${v}</span><div class="t a ${cls(s.a)}" data-abbr="${s.a}" data-code="${s.a}">${clean(a[v],s.b,TAGGED.has(s.a))}</div>${two?`<div class="t b ${cls(s.bb)}" data-abbr="${s.bb}" data-code="${s.bb}">${clean(b[v],s.b,TAGGED.has(s.bb))}</div>`:""}</div>`;
     }
     els.view.innerHTML = h+"</div>";
+    if (cur.s) echo(cur.s);
   } catch (e) {
     els.view.innerHTML = `<div class="err">Couldn't load that passage (${e.message}). Check the connection, or try another translation — not every translation carries every book.</div>`;
   } finally { busy=false; }
@@ -194,8 +306,149 @@ function step(d){
   els.book.value=b; fillChapters(); els.chapter.value=c; els.vfrom.value=""; els.vto.value=""; render();
 }
 
+// ---------------- Phase 2: tap → chooser → drawer ----------------
+let cur = { b:0, c:0, v:0, s:null, word:"", code:"" }; // what was tapped
+let tab = lsGet("lex.tab","original");
+let chooser=null;
+const TABS = { original:"Original", version:"Version", commentary:"Commentary", study:"Study" };
+
+function closeChooser(){ if (chooser){ chooser.remove(); chooser=null; } }
+function openChooser(x,y,order,head){
+  closeChooser();
+  const box=document.createElement("div"); box.className="chooser"; box.setAttribute("role","menu");
+  box.innerHTML = `<div class="hd">${esc(head)}</div>` + order.map(k=>`<button role="menuitem" data-tab="${k}">${TABS[k]}${k==="commentary"||k==="study"?"<small>soon</small>":""}</button>`).join("");
+  const main=document.querySelector("main"); const r=main.getBoundingClientRect();
+  box.style.left = Math.max(0, Math.min(x - r.left, r.width-190)) + "px"; box.style.top = (y - r.top + 8) + "px";
+  main.appendChild(box); chooser=box;
+  box.addEventListener("click", e=>{ const b=e.target.closest("button"); if (!b) return; e.stopPropagation(); closeChooser(); openDrawer(b.dataset.tab); });
+}
+document.addEventListener("click", e=>{ if (chooser && !chooser.contains(e.target)) closeChooser(); });
+document.addEventListener("keydown", e=>{ if (e.key==="Escape"){ closeChooser(); if (document.body.classList.contains("open")) closeDrawer(); } });
+
+els.view.addEventListener("click", e=>{
+  const w=e.target.closest(".w"), n=e.target.closest(".n"), t=e.target.closest(".t"); const vEl=e.target.closest(".v");
+  if (!vEl) return; const s=state(); const v=+vEl.dataset.v;
+  document.querySelectorAll(".w.sel").forEach(x=>x.classList.remove("sel"));
+  if (w) { // word tap → Original first
+    cur = { b:s.b, c:s.c, v, s:w.dataset.s.split(" ")[0], all:w.dataset.s.split(" "), word:w.textContent.trim(), code:t.dataset.code };
+    w.classList.add("sel"); e.stopPropagation();
+    openChooser(e.clientX, e.clientY, ["original","version","commentary","study"], `${cur.word} · ${cur.s}`);
+  } else if (n || t) { // verse tap → Version first
+    cur = { b:s.b, c:s.c, v, s:null, word:"", code:(t&&t.dataset.code)||s.a };
+    e.stopPropagation();
+    openChooser(e.clientX, e.clientY, ["version","original","commentary","study"], `${BOOKS[s.b-1][0]} ${s.c}:${v}`);
+  }
+});
+
+function openDrawer(k){ tab=k; lsSet("lex.tab",k); document.body.classList.add("open"); showTab(); }
+function closeDrawer(){ document.body.classList.remove("open"); clearEcho(); document.querySelectorAll(".w.sel").forEach(x=>x.classList.remove("sel")); }
+$("dclose").addEventListener("click", closeDrawer);
+document.querySelector(".tabs").addEventListener("click", e=>{ const b=e.target.closest("button"); if (b){ tab=b.dataset.tab; lsSet("lex.tab",tab); showTab(); } });
+
+function echo(id){ clearEcho(); document.querySelectorAll(`.w[data-s~="${id}"]`).forEach(x=>x.classList.add("echo")); }
+function clearEcho(){ document.querySelectorAll(".w.echo").forEach(x=>x.classList.remove("echo")); }
+
+function showTab(){
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on", b.dataset.tab===tab));
+  if (tab==="original") renderOriginal(); else if (tab==="version") renderVersion(); else renderSoon();
+}
+
+// ---- Recent words strip ----
+let recent = lsGet("lex.recent", []);
+function remember(){
+  if (!cur.s) return;
+  recent = [ {s:cur.s, word:cur.word, b:cur.b, c:cur.c, v:cur.v, code:cur.code}, ...recent.filter(r=>r.s!==cur.s) ].slice(0,6);
+  lsSet("lex.recent", recent); drawRecent();
+}
+function drawRecent(){
+  els.recent.hidden = !recent.length;
+  els.recent.innerHTML = `<span class="lbl">Recent</span>` + recent.map((r,i)=>`<button data-i="${i}" title="${BOOKS[r.b-1][0]} ${r.c}:${r.v}">${esc(r.word)}<small>${r.s}</small></button>`).join("");
+}
+els.recent.addEventListener("click", e=>{ const b=e.target.closest("button"); if (!b) return; const r=recent[+b.dataset.i]; cur={...r, all:[r.s]}; tab="original"; showTab(); });
+
+// ---- Original tab ----
+function sanitise(html){
+  return String(html||"")
+    .replace(/<a\s+href=["']?S:([GH]\d+)["']?>/gi,'<a href="#" data-s="$1">')
+    .replace(/<el>/gi,'<span class="grk">').replace(/<he>/gi,'<span class="heb">').replace(/<\/(el|he)>/gi,'</span>')
+    .replace(/<p class="[^"]*"\s*\/>/gi,"<br>").replace(/<p\s*\/>/gi,"<br>")
+    .replace(/<(?!\/?(b|i|p|ol|li|br|span|a)\b)[^>]+>/gi,"");
+}
+async function renderOriginal(){
+  const d=els.dbody; const ref=`${BOOKS[cur.b-1][0]} ${cur.c}:${cur.v}`;
+  const interCtl = `<div class="ctl"><label><input type="checkbox" id="inter" ${document.body.classList.contains("inter")?"checked":""}> Show numbers under every word</label></div>`;
+  if (!cur.s) { // verse tapped: list the tagged words of the verse, or explain
+    const tagged = [...document.querySelectorAll(`.v[data-v="${cur.v}"] .t[data-code="${cur.code}"] .w`)];
+    if (!tagged.length) {
+      const anyTagged = [...document.querySelectorAll(`.v[data-v="${cur.v}"] .w`)];
+      d.innerHTML = `<h2>${ref}</h2><p class="sub">${esc(cur.code)} carries no Strong's numbers on bolls.</p>` + (anyTagged.length
+        ? `<p>The other column does — tap a word there, or pick from it:</p><div class="wl">${anyTagged.map(w=>`<button data-s="${w.dataset.s.split(" ")[0]}">${esc(w.textContent.trim())}<small>${w.dataset.s.split(" ")[0]}</small></button>`).join("")}</div>`
+        : `<p>Switch A or B to <b>KJV</b>, <b>ASV</b> or <b>WLCa</b> to tap words.</p>`) + interCtl;
+    } else {
+      d.innerHTML = `<h2>${ref}</h2><p class="sub">Words in ${esc(cur.code)} — pick one</p><div class="wl">${tagged.map(w=>`<button data-s="${w.dataset.s.split(" ")[0]}">${esc(w.textContent.trim())}<small>${w.dataset.s.split(" ")[0]}</small></button>`).join("")}</div>` + interCtl;
+    }
+    bindOriginal(); return;
+  }
+  remember(); echo(cur.s);
+  d.innerHTML = `<h2>${esc(cur.word)}</h2><p class="sub">${cur.s} · ${ref} · ${esc(cur.code)}</p><div class="state loading">Fetching entry…</div>`;
+  try {
+    const e = await strongs(cur.s);
+    if (!e) { d.innerHTML += `<div class="err">No entry for ${cur.s} on bolls.</div>`; return; }
+    const heb = cur.s[0]==="H";
+    const alt = (cur.all||[]).filter(x=>x!==cur.s);
+    d.innerHTML = `<h2>${esc(cur.word)}</h2><p class="sub">${cur.s} · ${ref} · ${esc(cur.code)}${alt.length?` · also ${alt.map(a=>`<a href="#" data-s="${a}">${a}</a>`).join(", ")}`:""}</p>
+      <div style="margin-top:8px"><span class="lex ${heb?"heb":"grk"}">${esc(e.lexeme||"")}</span></div>
+      <p class="sub">${esc(e.transliteration||"")}${e.pronunciation?` · ${esc(e.pronunciation)}`:""}</p>
+      ${e.short_definition?`<p><b>${esc(e.short_definition)}</b></p>`:""}
+      <h3>${heb?"BDB / Strong's":"Thayer / Strong's"} <span class="tag src">Sourced</span></h3>
+      <div class="def">${sanitise(e.definition)}</div>
+      <p class="sub" style="margin-top:12px">Entry as served by <a href="https://bolls.life/dictionary-definition/BDBT/${cur.s}/" target="_blank" rel="noopener">bolls.life</a>. Linked numbers open here.</p>
+      ${interCtl}`;
+    bindOriginal();
+  } catch (err) { d.innerHTML += `<div class="err">Couldn't fetch the entry (${err.message}).</div>`; }
+}
+function bindOriginal(){
+  const d=els.dbody;
+  d.querySelectorAll("[data-s]").forEach(a=>a.addEventListener("click", e=>{ e.preventDefault(); const id=a.dataset.s; const w=document.querySelector(`.w[data-s~="${id}"]`); cur={...cur, s:id, all:[id], word:w?w.textContent.trim():id}; renderOriginal(); }));
+  const ic=d.querySelector("#inter"); if (ic) ic.addEventListener("change", ()=>{ document.body.classList.toggle("inter", ic.checked); lsSet("lex.inter", ic.checked); });
+}
+
+// ---- Version tab: the verse across translations, ordered along the spectrum ----
+let picks = lsGet("lex.versions", VERSION_DEFAULT);
+async function renderVersion(){
+  const d=els.dbody; const ref=`${BOOKS[cur.b-1][0]} ${cur.c}:${cur.v}`; const s=state();
+  const set=[...new Set([s.a, s.bb, ...picks].filter(Boolean))].sort((x,y)=>ORDER[x]-ORDER[y]);
+  const pickHtml = `<details class="pick"><summary>Translations shown (${set.length})</summary><div class="opts">${Object.keys(ORDER).map(c=>`<label><input type="checkbox" data-c="${c}" ${set.includes(c)?"checked":""} ${c===s.a||c===s.bb?"disabled":""}>${c}</label>`).join("")}</div></details>`;
+  d.innerHTML = `<h2>${ref}</h2><p class="sub">${cur.s?`${esc(cur.word)} · ${cur.s} highlighted where the text carries numbers`:"Most literal at the top, freest at the bottom"}</p>${pickHtml}<div class="state loading">Fetching ${set.length} translations…</div>`;
+  d.querySelectorAll(".pick input").forEach(i=>i.addEventListener("change", ()=>{ picks = [...d.querySelectorAll(".pick input:checked")].map(x=>x.dataset.c); lsSet("lex.versions", picks); renderVersion(); }));
+  const rows = await Promise.all(set.map(async code=>{
+    try { const ch=await chapter(code,cur.b,cur.c); const vv=ch.find(x=>x.verse===cur.v); return [code, vv?clean(vv.text,cur.b,TAGGED.has(code)):""]; }
+    catch { return [code, null]; }
+  }));
+  let lastGroup=null, h="";
+  for (const [code,text] of rows) {
+    const grp = Object.entries(TRANSLATIONS).find(([,l])=>l.some(([c])=>c===code))[0].replace(/—/g,"").trim();
+    if (grp!==lastGroup) { h += `<div class="spec">${esc(grp)}</div>`; lastGroup=grp; }
+    const cls = SCRIPT[code]==="he"?"rtl":SCRIPT[code]==="el"?"grk":"";
+    h += `<div class="vrow ${code===cur.code?"cur":""}"><div class="ab"><b>${code}</b>${code===cur.code?"current":""}</div><div class="t ${cls}">${text===null?`<span class="sub">not available</span>`:(text||`<span class="sub">—</span>`)}</div></div>`;
+  }
+  const st=d.querySelector(".state"); if (st) st.outerHTML = h + `<p class="sub" style="margin-top:10px"><span class="tag src">Sourced</span> Verse-level only: bolls tags Strong's numbers in KJV, ASV and WLCa, so words can't be aligned across the other translations.</p>`;
+  if (cur.s) d.querySelectorAll(`.vrow .w[data-s~="${cur.s}"]`).forEach(x=>x.classList.add("echo"));
+  d.querySelectorAll(".vrow .w").forEach(w=>w.addEventListener("click", ()=>{ cur={...cur, s:w.dataset.s.split(" ")[0], all:w.dataset.s.split(" "), word:w.textContent.trim()}; tab="original"; showTab(); }));
+}
+
+function renderSoon(){
+  const ref=`${BOOKS[cur.b-1][0]} ${cur.c}:${cur.v}`;
+  els.dbody.innerHTML = tab==="commentary"
+    ? `<h2>Commentary</h2><p class="sub">${ref}</p><p class="soon">Coming in Phase 4 — your last-used commentary here, with a picker for others, in context.</p>`
+    : `<h2>Study</h2><p class="sub">${ref}</p><p class="soon">Coming in Phase 4 — devotion and study options for the passage, with links out to Bible Project and Practicing the Way.</p>`;
+}
+
+// ---------------- boot ----------------
 fillSelects();
 applyState(fromHash(location.hash) || loadPrefs() || { b:43, c:3, f:16, t:18, a:"WEB", bb:"ESV" });
+if (lsGet("lex.inter",false)) document.body.classList.add("inter");
+drawRecent();
 els.book.addEventListener("change", ()=>{ fillChapters(); els.vfrom.value=""; els.vto.value=""; render(); });
 els.chapter.addEventListener("change", ()=>{ els.vfrom.value=""; els.vto.value=""; render(); });
 for (const id of ["ta","tb"]) els[id].addEventListener("change", ()=>render());
