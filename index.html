@@ -119,8 +119,17 @@ details.pick label{font-family:var(--mono);font-size:.72rem;display:flex;gap:4px
   body.open main{padding-bottom:62vh}
   body.open footer{display:none}
 }
+.sum{display:none;width:100%;justify-content:space-between;align-items:center;gap:8px;background:transparent;border:0;padding:4px 0;font-family:var(--serif);font-size:1rem;color:var(--fg);text-align:left}
+.sum .tr{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.sum .car{font-family:var(--mono);color:var(--muted);transition:transform .15s}
+header.exp .sum .car{transform:rotate(180deg)}
 @media (max-width:640px){
   body{font-size:16px}
+  .sum{display:flex}
+  header:not(.exp) .bar>:not(.sum){display:none}
+  header.exp .bar{row-gap:6px}
+  header .bar .grp:has(#ta),header .bar .grp:has(#tb){width:100%}
+  header .bar #ta,header .bar #tb{flex:1;min-width:0}
   .two .heads{display:none}
   .two .grid{grid-template-columns:2.4em 1fr}
   .two .v .t.b{grid-column:2;border-top:1px dashed var(--line);margin-top:-1px}
@@ -135,6 +144,7 @@ details.pick label{font-family:var(--mono);font-size:.72rem;display:flex;gap:4px
 <body>
 <header>
   <div class="bar">
+    <button class="sum" id="sum" aria-expanded="false" aria-controls="bar"><span><b id="sumRef">…</b> <span class="tr" id="sumTr"></span></span><span class="car">▾</span></button>
     <span class="brand">Lexicon</span>
     <div class="grp"><select id="book" aria-label="Book"></select><select id="chapter" aria-label="Chapter"></select></div>
     <div class="grp"><span class="lbl">vv</span><select id="vfrom" aria-label="From verse"><option value="">1</option></select><span class="sep">–</span><select id="vto" aria-label="To verse"><option value="">end</option></select></div>
@@ -279,6 +289,7 @@ async function render(push=true){
   els.view.className = two?"two":"one";
   els.title.textContent = `${bk} ${s.c}${s.f?":"+s.f+(s.t&&s.t!==s.f?"–"+s.t:""):""}`;
   els.meta.textContent = two?`${s.a} · ${s.bb}`:s.a;
+  $("sumRef").textContent = els.title.textContent; $("sumTr").textContent = els.meta.textContent;
   els.view.innerHTML = `<div class="state loading">Fetching ${two?"two translations":"text"}…</div>`;
   try {
     const [A,B] = await Promise.all([chapter(s.a,s.b,s.c), two?chapter(s.bb,s.b,s.c):null]);
@@ -454,7 +465,8 @@ els.book.addEventListener("change", ()=>{ fillChapters(); els.vfrom.value=""; el
 els.chapter.addEventListener("change", ()=>{ els.vfrom.value=""; els.vto.value=""; render(); });
 for (const id of ["ta","tb"]) els[id].addEventListener("change", ()=>render());
 for (const id of ["vfrom","vto"]) els[id].addEventListener("change", ()=>{ if (els.vto.value && els.vfrom.value && +els.vto.value<+els.vfrom.value) els.vto.value=""; render(); });
-$("go").addEventListener("click", ()=>render());
+$("go").addEventListener("click", ()=>{ document.querySelector("header").classList.remove("exp"); $("sum").setAttribute("aria-expanded","false"); render(); });
+$("sum").addEventListener("click", ()=>{ const h=document.querySelector("header"); const on=h.classList.toggle("exp"); $("sum").setAttribute("aria-expanded",on); });
 $("swap").addEventListener("click", ()=>{ if (!els.tb.value) return; const x=els.ta.value; els.ta.value=els.tb.value; els.tb.value=x; render(); });
 $("prev").addEventListener("click", ()=>step(-1));
 $("next").addEventListener("click", ()=>step(1));

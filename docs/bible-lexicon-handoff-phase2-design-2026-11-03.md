@@ -1,4 +1,4 @@
-# Bible Lexicon — Handoff (Phase 2 designed, ready to build — 3 Nov 2026)
+# Bible Lexicon — Handoff (Phase 2 BUILT and signed off — 3 Nov 2026)
 
 Read `bible-lexicon-handoff-phase1-2026-11-03.md` first for state, locked decisions, architecture and gotchas. This brief adds the Phase 2 design, agreed by Ryan in Invention + Discernment on 3 Nov 2026.
 
@@ -27,3 +27,15 @@ Tap any word in KJV/ASV/WLCa → chooser → Original shows number, lemma, gloss
 - Working Genius phase: **Enablement** (build), then Tenacity (read the done-list back).
 - Model/effort: **Opus high**. Fable not needed unless Phase 3 (amalgamation engine) is bundled in.
 - Open the new chat with: "continue from the Phase 2 design handoff in ryan-scholar/bible-lexicon docs/".
+
+## Phase 2 outcome (3 Nov 2026, evening)
+- Built and live. Done-list read back and met: word tap → chooser → Original (Sourced, echo-highlight, interlinear toggle), Version (verse-level spectrum, translation picker), Commentary/Study placeholders, phone bottom sheet, deep links intact.
+- Learned on the way: **SBLGNT carries Strong's numbers** on bolls (now tappable; TAGGED = KJV, ASV, WLCa, SBLGNT). SBLGNT also carries `<m>` morphology tags — stripped in `clean()`. **NIV2011 has been pulled from bolls** (verse text replaced by a notice from the site owner) — removed from the picker. Both nudge the licensing review up the list.
+- Phone header now collapses to one summary line (passage + translations); tap to expand the pickers.
+- localStorage keys: `lex.state`, `lex.tab`, `lex.recent`, `lex.versions`, `lex.inter`.
+
+## Next
+1. Surface NET translator notes / footnotes (`<f>`, `<e>`, `<sup>` currently stripped).
+2. Phase 3: amalgamation engine. Opus high; Fable only if bundling with Phase 4.
+3. Licensing review of bolls' copyrighted texts (now more pressing given NIV removal).
+4. Parked: "translation history" on Original — needs a source or a Claude-judgement tag.
