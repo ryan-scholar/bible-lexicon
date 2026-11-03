@@ -22,7 +22,6 @@ header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px
 .brand{font-weight:600;letter-spacing:.02em;margin-right:4px}
 select,input,button{font-family:var(--mono);font-size:.82rem;padding:7px 9px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:3px}
 select:focus,input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-input[type=number]{width:4.6em}
 button{cursor:pointer}
 button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 button.quiet{background:transparent;color:var(--muted)}
@@ -70,7 +69,7 @@ footer{max-width:1100px;margin:28px auto 0;font-family:var(--mono);font-size:.68
   <div class="bar">
     <span class="brand">Lexicon</span>
     <div class="grp"><select id="book" aria-label="Book"></select><select id="chapter" aria-label="Chapter"></select></div>
-    <div class="grp"><span class="lbl">vv</span><input id="vfrom" type="number" min="1" placeholder="1" aria-label="From verse"><span class="sep">–</span><input id="vto" type="number" min="1" placeholder="end" aria-label="To verse"></div>
+    <div class="grp"><span class="lbl">vv</span><select id="vfrom" aria-label="From verse"><option value="">1</option></select><span class="sep">–</span><select id="vto" aria-label="To verse"><option value="">end</option></select></div>
     <div class="grp"><span class="lbl">A</span><select id="ta" aria-label="Translation A"></select></div>
     <div class="grp"><span class="lbl">B</span><select id="tb" aria-label="Translation B"></select><button id="swap" class="quiet" title="Swap A and B" aria-label="Swap A and B">⇄</button></div>
     <button id="go" class="primary">Read</button>
@@ -124,10 +123,16 @@ function fillChapters(){
   els.chapter.value = Math.min(cur,n);
 }
 
+function fillVerses(nums){
+  const f=els.vfrom.value, t=els.vto.value;
+  els.vfrom.innerHTML='<option value="">1</option>'; els.vto.innerHTML='<option value="">end</option>';
+  for (const v of nums){ const a=document.createElement("option"); a.value=v; a.textContent=v; els.vfrom.appendChild(a); els.vto.appendChild(a.cloneNode(true)); }
+  els.vfrom.value = nums.includes(+f)?f:""; els.vto.value = nums.includes(+t)?t:"";
+}
 function state(){ return { b:+els.book.value, c:+els.chapter.value, f:+els.vfrom.value||0, t:+els.vto.value||0, a:els.ta.value, bb:els.tb.value }; }
 function applyState(s){
   if (s.b) els.book.value=s.b; fillChapters(); if (s.c) els.chapter.value=s.c;
-  els.vfrom.value=s.f||""; els.vto.value=s.t||""; if (s.a) els.ta.value=s.a; els.tb.value=s.bb||"";
+  for (const [el,v] of [[els.vfrom,s.f],[els.vto,s.t]]) { if (v && ![...el.options].some(o=>+o.value===v)) { const o=document.createElement("option"); o.value=v; o.textContent=v; el.appendChild(o);} el.value=v||""; } if (s.a) els.ta.value=s.a; els.tb.value=s.bb||"";
 }
 function savePrefs(){ try{ localStorage.setItem("lex.state", JSON.stringify(state())); }catch{} }
 function loadPrefs(){ try{ return JSON.parse(localStorage.getItem("lex.state")||"null"); }catch{ return null; } }
@@ -168,8 +173,9 @@ async function render(push=true){
     const [A,B] = await Promise.all([chapter(s.a,s.b,s.c), two?chapter(s.bb,s.b,s.c):null]);
     const byV = m => { const o={}; for (const v of m||[]) o[v.verse]=v.text; return o; };
     const a=byV(A), b=byV(B);
-    const verses = [...new Set([...Object.keys(a),...Object.keys(b)].map(Number))].sort((x,y)=>x-y)
-      .filter(v=>(!s.f||v>=s.f)&&(!s.t||v<=s.t));
+    const all = [...new Set([...Object.keys(a),...Object.keys(b)].map(Number))].sort((x,y)=>x-y);
+    fillVerses(all);
+    const verses = all.filter(v=>(!s.f||v>=s.f)&&(!s.t||v<=s.t));
     if (!verses.length) { els.view.innerHTML=`<div class="err">No verses in that range. ${bk} ${s.c} has ${Object.keys(a).length} verses in ${s.a}.</div>`; return; }
     const cls=code=>SCRIPT[code]==="he"?"rtl":SCRIPT[code]==="el"?"grk":"";
     let h = `<div class="heads"><span class="n">#</span><span>${s.a} · ${LABEL[s.a]}</span>${two?`<span>${s.bb} · ${LABEL[s.bb]}</span>`:""}</div><div class="grid">`;
@@ -193,7 +199,7 @@ applyState(fromHash(location.hash) || loadPrefs() || { b:43, c:3, f:16, t:18, a:
 els.book.addEventListener("change", ()=>{ fillChapters(); els.vfrom.value=""; els.vto.value=""; render(); });
 els.chapter.addEventListener("change", ()=>{ els.vfrom.value=""; els.vto.value=""; render(); });
 for (const id of ["ta","tb"]) els[id].addEventListener("change", ()=>render());
-for (const id of ["vfrom","vto"]) els[id].addEventListener("keydown", e=>{ if (e.key==="Enter") render(); });
+for (const id of ["vfrom","vto"]) els[id].addEventListener("change", ()=>{ if (els.vto.value && els.vfrom.value && +els.vto.value<+els.vfrom.value) els.vto.value=""; render(); });
 $("go").addEventListener("click", ()=>render());
 $("swap").addEventListener("click", ()=>{ if (!els.tb.value) return; const x=els.ta.value; els.ta.value=els.tb.value; els.tb.value=x; render(); });
 $("prev").addEventListener("click", ()=>step(-1));
