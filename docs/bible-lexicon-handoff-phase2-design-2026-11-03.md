@@ -56,6 +56,6 @@ Tap any word in KJV/ASV/WLCa → chooser → Original shows number, lemma, gloss
 
 ## Next
 1. Ryan road-tests Phase 3 on real reading; tune the blend rules from what feels off.
-2. Phase 4: commentaries (public domain first) + Bible Project / Practicing the Way links into the Commentary and Study tabs.
+2. **Phase 4 (Ryan, 4 Nov): commentaries + "the why" between differing translations.** Ryan road-tested Phase 3 and signed it off ("works very well"). Ideas to design in Invention: (a) Sourced — public-domain word-study commentaries that explain translation choices (to research: which exist with a live, browser-reachable API); (b) Sourced — when a Braid box branches, show the lexicon's range of meanings so you can see each translation picked a different sense (data already fetched); (c) Claude judgement — not possible live (static page), park. Then the rest of Phase 4: commentaries (public domain first) + Bible Project / Practicing the Way links into the Commentary and Study tabs.
 3. Licensing review of bolls' copyrighted texts (now more pressing given NIV removal).
 4. Parked: NET translator notes (labs feed has anchors but no note text — another source needed). "Translation history" on Original — needs a source or a Claude-judgement tag.
