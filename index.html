@@ -10,11 +10,11 @@
    Phase 2: tap a word or verse number → chooser (Original · Version · Commentary · Study) → study drawer (right column / bottom sheet). */
 :root{
   --bg:#f7f5f0; --fg:#23211c; --muted:#6f6a5e; --line:#dcd7cb; --panel:#fffdf8; --panel-2:#f1ede4;
-  --accent:#3b5f8a; --accent-ink:#f7f5f0; --bad:#a63a2f; --bad-bg:#f6e0dc; --echo:rgba(59,95,138,.18);
+  --accent:#3b5f8a; --accent-ink:#f7f5f0; --bad:#a63a2f; --bad-bg:#f6e0dc; --echo:rgba(59,95,138,.18); --conv:#4d7a4f; --conv-bg:rgba(77,122,79,.15); --branch:#a3661f;
   --serif:"Source Serif 4",Georgia,serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --hebrew:"Noto Serif Hebrew","Times New Roman",serif;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1915;--fg:#ece8df;--muted:#a39d8f;--line:#38362f;--panel:#23221d;--panel-2:#2b2a24;--accent:#8db1dc;--accent-ink:#1a1915;--bad:#ef8a7d;--bad-bg:#3d221e;--echo:rgba(141,177,220,.22);color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#1a1915;--fg:#ece8df;--muted:#a39d8f;--line:#38362f;--panel:#23221d;--panel-2:#2b2a24;--accent:#8db1dc;--accent-ink:#1a1915;--bad:#ef8a7d;--bad-bg:#3d221e;--echo:rgba(141,177,220,.22);color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1915;--fg:#ece8df;--muted:#a39d8f;--line:#38362f;--panel:#23221d;--panel-2:#2b2a24;--accent:#8db1dc;--accent-ink:#1a1915;--bad:#ef8a7d;--bad-bg:#3d221e;--echo:rgba(141,177,220,.22);--conv:#8fc493;--conv-bg:rgba(143,196,147,.16);--branch:#e0a75e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1a1915;--fg:#ece8df;--muted:#a39d8f;--line:#38362f;--panel:#23221d;--panel-2:#2b2a24;--accent:#8db1dc;--accent-ink:#1a1915;--bad:#ef8a7d;--bad-bg:#3d221e;--echo:rgba(141,177,220,.22);--conv:#8fc493;--conv-bg:rgba(143,196,147,.16);--branch:#e0a75e;color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--serif);font-size:17px;line-height:1.55}
@@ -65,6 +65,37 @@ body.inter .t.rtl .w::after{direction:ltr}
 footer{max-width:1100px;margin:28px auto 0;font-family:var(--mono);font-size:.68rem;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;display:grid;gap:4px;padding-inline:16px}
 .tag{display:inline-block;border:1px solid var(--line);border-radius:2px;padding:1px 6px;letter-spacing:.06em;text-transform:uppercase;font-family:var(--mono);font-size:.62rem;color:var(--muted);vertical-align:middle}
 .tag.src{border-color:var(--accent);color:var(--accent)}
+.tag.alg{border-color:var(--conv);color:var(--conv)}
+/* Phase 3 */
+.modes{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.modes button{font-family:var(--mono);font-size:.72rem;padding:3px 9px;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:3px;cursor:pointer}
+.modes button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.modes .bl{margin-left:auto;font-family:var(--mono);font-size:.72rem;display:flex;gap:4px;align-items:center;cursor:pointer}
+.braid{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.braid.rtl{direction:rtl}
+.bc{direction:ltr;border:1px solid var(--line);border-radius:4px;padding:5px 7px;min-width:5.5em;max-width:13em;cursor:pointer;background:var(--panel)}
+.bc .o{text-align:center;font-size:1.05em}
+.bc .o.rtl{font-family:var(--hebrew);font-size:1.3em;direction:rtl}
+.bc .sn{font-family:var(--mono);font-size:.58rem;color:var(--muted);text-align:center;margin-bottom:2px}
+.bc .r{font-size:.8rem;line-height:1.3}
+.bc .r i{font-family:var(--mono);font-style:normal;font-size:.58rem;color:var(--muted);margin-right:4px}
+.bc.conv{border-color:var(--conv);background:var(--conv-bg)}
+.bc.lean{border-left:3px solid var(--conv)}
+.bc.branch{border-left:3px dashed var(--branch)}
+.bc.none{opacity:.55}
+.bc.sel{box-shadow:0 0 0 2px var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;font-family:var(--mono);font-size:.66rem;color:var(--muted)}
+.legend .bc{min-width:0;padding:2px 7px;cursor:default}
+.legend .ov{padding:1px 6px}
+.blend{background:var(--panel-2);border-left:3px solid var(--accent);padding:8px 10px;border-radius:3px;margin:8px 0}
+.blend .bt{font-size:1rem;line-height:1.55;margin-top:4px}
+.blend .how{display:block;font-size:.74rem;color:var(--muted);margin-top:6px;line-height:1.4}
+.bc .q{font-family:var(--mono);font-size:.62rem;color:var(--branch);border:1px solid var(--branch);border-radius:50%;padding:0 4px;cursor:help}
+.blend .sw{text-decoration:underline;text-decoration-color:var(--conv);text-decoration-thickness:2px;text-underline-offset:3px}
+.ov{border-radius:2px}
+.ov.s3{background:var(--conv-bg);box-shadow:inset 0 -2px 0 var(--conv)}
+.ov.s2{background:var(--conv-bg)}
+.ov.s0{color:var(--branch);text-decoration:underline dotted;text-underline-offset:3px}
 /* chooser */
 .chooser{position:absolute;z-index:20;background:var(--panel);border:1px solid var(--line);border-radius:4px;box-shadow:0 8px 28px rgba(0,0,0,.18);display:flex;flex-direction:column;min-width:170px;overflow:hidden}
 .chooser .hd{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:7px 12px 3px;border-bottom:1px solid var(--line);white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis}
@@ -179,7 +210,7 @@ header.exp .sum .car{transform:rotate(180deg)}
 </main>
 
 <footer>
-  <div><span class="tag src">Sourced</span> Text and lexicon entries are fetched live from bolls.life each time; nothing is stored. Tap a word in KJV, ASV, WLCa or SBLGNT for its Strong's entry; tap a verse number for the verse across translations. A † marks a KJV margin note (the 1611 translators' "Heb." / "Gr." / "or," readings) — tap to open. bolls does not carry NET's translator notes, or the cross-references and textual-variant signs some texts point to, so those are not shown.</div>
+  <div><span class="tag src">Sourced</span> Text and lexicon entries are fetched live from bolls.life each time; nothing is stored. NET is fetched live from labs.bible.org, which carries its Strong's numbers. Tap a word in KJV, ASV, NET, WLCa or SBLGNT for its Strong's entry; tap a verse number for the verse across translations. A † marks a KJV margin note (the 1611 translators' "Heb." / "Gr." / "or," readings) — tap to open. bolls does not carry NET's translator notes, or the cross-references and textual-variant signs some texts point to, so those are not shown.</div>
   <div>Translation groupings (literal / middle / dynamic / paraphrase) follow the publishers' own descriptions and common classification; they are labels, not measurements.</div>
 </footer>
 
@@ -195,7 +226,7 @@ const TRANSLATIONS = {
   "— Dynamic (thought for thought) —":[["NLT","NLT 2015"],["AMP","Amplified"]],
   "— Paraphrase —":[["MSG","The Message"]],
 };
-const TAGGED = new Set(["KJV","ASV","WLCa","SBLGNT"]); // texts bolls serves with <S>n</S> Strong's tags
+const TAGGED = new Set(["KJV","ASV","WLCa","SBLGNT","NET"]); // texts carrying Strong's numbers (NET via labs.bible.org)
 const SCRIPT = {}, LABEL = {}, ORDER = {}; let oi=0;
 for (const g of Object.values(TRANSLATIONS)) for (const [c,l,s] of g) { SCRIPT[c]=s||"en"; LABEL[c]=l; ORDER[c]=oi++; }
 const VERSION_DEFAULT = ["WLCa","SBLGNT","KJV","ESV","NET","NLT","MSG"];
@@ -245,10 +276,33 @@ function fromHash(h){
 }
 
 async function chapter(code,b,c){
+  if (code==="NET") return netChapter(b,c);
   const key=`${code}/${b}/${c}`; if (cache.has(key)) return cache.get(key);
-  const res = await fetch(`https://bolls.life/get-text/${code}/${b}/${c}/`);
+  const res = await retry(()=>fetch(`https://bolls.life/get-text/${code}/${b}/${c}/`));
   if (!res.ok) throw new Error(`${code}: server answered ${res.status}`);
   const j = await res.json(); cache.set(key,j); return j;
+}
+// NET comes from labs.bible.org (second source, allowed by Ryan 4 Nov 2026): it carries Strong's numbers on each word or
+// phrase (<st data-num="07225">beginning</st>), which bolls' NET lacks. Converted to bolls markup so one parser serves both.
+// The feed marks where NET's notes sit (<n id>) but carries no note text, so those markers are dropped.
+async function retry(f){ try { const r=await f(); if (r.ok) return r; } catch {} await new Promise(z=>setTimeout(z,800)); return f(); }
+async function netChapter(b,c){
+  const key=`NET/${b}/${c}`; if (cache.has(key)) return cache.get(key);
+  const res = await retry(()=>fetch(`https://labs.bible.org/api/?passage=${encodeURIComponent(BOOKS[b-1][0]+" "+c)}&formatting=full&type=json`));
+  if (!res.ok) throw new Error(`NET: server answered ${res.status}`);
+  const j = (await res.json()).filter(v=>+v.chapter===c).map(v=>({ verse:+v.verse, text:netToBolls(v.text) }));
+  cache.set(key,j); return j;
+}
+function netToBolls(t){
+  let title="";
+  const flat = x => String(x).replace(/<n\b[^>]*\/>/g,"").replace(/<\/?p\b[^>]*>/g," ").replace(/<\/?(?:span|b|i)\b[^>]*>/g,"");
+  let s = String(t).replace(/^\s*<p class="(?:psasuper|lamhebrew)">(.*?)(?=<p\b|$)/s, (_,x)=>{ title=flat(x).replace(/<st[^>]*>(.*?)<\/st>/gs,"$1"); return ""; });
+  s = flat(s);
+  // untagged words become <g>…</g> so the blend can keep them and the reader doesn't fold them into a tappable word
+  const g = x => /\p{L}/u.test(x) ? `<g>${x}</g>` : x; let out="", last=0, m; const re=/<st data-num="([\d ]+)"[^>]*>(.*?)<\/st>/gs;
+  while ((m=re.exec(s))) { out += g(s.slice(last,m.index)) + m[2] + m[1].trim().split(/\s+/).map(x=>`<S>${parseInt(x,10)}</S>`).join(""); last=re.lastIndex; }
+  out += g(s.slice(last));
+  return (title?`<sup>${title}</sup> `:"") + out;
 }
 async function strongs(id){
   if (dcache.has(id)) return dcache.get(id);
@@ -286,7 +340,8 @@ function cleanText(s, book, tagged){
   const pre = book<=39?"H":"G"; let out=""; let last=0; let lastSpanOpen=-1;
   const re=/<S>(\d+)<\/S>/gi; let m;
   while ((m=re.exec(s))) {
-    const chunk = s.slice(last, m.index); const num = pre+m[1]; last = re.lastIndex;
+    let chunk = s.slice(last, m.index); const num = pre+m[1]; last = re.lastIndex;
+    const gi = chunk.lastIndexOf("</g>"); if (gi>=0) { out += chunk.slice(0,gi+4); chunk = chunk.slice(gi+4); lastSpanOpen=-1; } // NET's untagged words stay plain
     if (!chunk.trim() && lastSpanOpen>=0) { // a second number on the same word: add it to the previous span
       out = out.slice(0,lastSpanOpen) + out.slice(lastSpanOpen).replace(/data-s="([^"]*)"/, (_,v)=>`data-s="${v} ${num}"`) + chunk; continue;
     }
@@ -457,17 +512,39 @@ function bindOriginal(){
 
 // ---- Version tab: the verse across translations, ordered along the spectrum ----
 let picks = lsGet("lex.versions", VERSION_DEFAULT);
+// ---------------- Phase 3: Braid (word for word) + Overlay (thought for thought), each with an Algorithmic blend ----------------
+let vmode = lsGet("lex.vmode","spectrum"), blend = lsGet("lex.blend", false), vtok = 0;
+const VMODES = { spectrum:"Spectrum", braid:"Braid", overlay:"Overlay" };
+const norm = s => String(s).toLowerCase().replace(/[^\p{L}\p{N}' ]/gu," ").replace(/\s+/g," ").trim();
+const plain = h => String(h||"").replace(/<[^>]+>/g,"").replace(/&quot;/g,'"').replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">");
+
+async function verseText(code,b,c,v){ try { const ch=await chapter(code,b,c); const x=ch.find(y=>y.verse===v); return x?x.text:""; } catch { return null; } }
+
 async function renderVersion(){
-  const d=els.dbody; const ref=`${BOOKS[cur.b-1][0]} ${cur.c}:${cur.v}`; const s=state();
-  const nt=cur.b>=40; const offTestament=c=>(SCRIPT[c]==="he"&&nt)||(["SBLGNT","NA28","TR"].includes(c)&&!nt);
+  const d=els.dbody; const ref=`${BOOKS[cur.b-1][0]} ${cur.c}:${cur.v}`; const s=state(); const my=++vtok;
+  const nt=cur.b>=40; const offTestament=c=>(SCRIPT[c]==="he"&&nt)||(["SBLGNT","NA28","TR"].includes(c)&&!nt)||(c==="LXXE"&&nt);
   const set=[...new Set([s.a, s.bb, ...picks].filter(Boolean))].filter(c=>c===s.a||c===s.bb||!offTestament(c)).sort((x,y)=>ORDER[x]-ORDER[y]);
   const pickHtml = `<details class="pick"><summary>Translations shown (${set.length})</summary><div class="opts">${Object.keys(ORDER).map(c=>`<label><input type="checkbox" data-c="${c}" ${set.includes(c)?"checked":""} ${c===s.a||c===s.bb?"disabled":""}>${c}</label>`).join("")}</div></details>`;
-  d.innerHTML = `<h2>${ref}</h2><p class="sub">${cur.s?`${esc(cur.word)} · ${cur.s} highlighted where the text carries numbers`:"Most literal at the top, freest at the bottom"}</p>${pickHtml}<div class="state loading">Fetching ${set.length} translations…</div>`;
+  const sub = vmode==="braid" ? `The original's word order, with how KJV, ASV and NET render each word`
+            : vmode==="overlay" ? `Words most translations share are shaded; words only one uses are underlined`
+            : cur.s ? `${esc(cur.word)} · ${cur.s} highlighted where the text carries numbers` : "Most literal at the top, freest at the bottom";
+  const modes = `<div class="modes">${Object.entries(VMODES).map(([k,l])=>`<button data-m="${k}" class="${k===vmode?"on":""}">${l}</button>`).join("")}${vmode==="spectrum"?"":`<label class="bl"><input type="checkbox" id="blend" ${blend?"checked":""}> Blend</label>`}</div>`;
+  d.innerHTML = `<h2>${ref}</h2>${modes}<p class="sub">${sub}</p>${vmode==="braid"?"":pickHtml}<div class="state loading">Fetching…</div>`;
+  d.querySelectorAll(".modes button").forEach(b=>b.addEventListener("click", ()=>{ vmode=b.dataset.m; lsSet("lex.vmode",vmode); renderVersion(); }));
+  const bl=d.querySelector("#blend"); if (bl) bl.addEventListener("change", ()=>{ blend=bl.checked; lsSet("lex.blend",blend); renderVersion(); });
   d.querySelectorAll(".pick input").forEach(i=>i.addEventListener("change", ()=>{ picks = [...d.querySelectorAll(".pick input:checked")].map(x=>x.dataset.c); lsSet("lex.versions", picks); renderVersion(); }));
-  const rows = await Promise.all(set.map(async code=>{
-    try { const ch=await chapter(code,cur.b,cur.c); const vv=ch.find(x=>x.verse===cur.v); return [code, vv?clean(vv.text,cur.b,TAGGED.has(code),false):""]; }
-    catch { return [code, null]; }
-  }));
+  let h;
+  try { h = vmode==="braid" ? await braidHtml() : vmode==="overlay" ? await overlayHtml(set) : await spectrumHtml(set); }
+  catch (e) { h = `<div class="err">Couldn't build this view (${esc(e.message)}).</div>`; }
+  if (my!==vtok) return; // a newer tap replaced this one
+  const st=d.querySelector(".state"); if (st) st.outerHTML = h;
+  if (cur.s) d.querySelectorAll(`.vrow .w[data-s~="${cur.s}"]`).forEach(x=>x.classList.add("echo"));
+  d.querySelectorAll(".vrow .w").forEach(w=>w.addEventListener("click", ()=>{ cur={...cur, s:w.dataset.s.split(" ")[0], all:w.dataset.s.split(" "), word:w.textContent.trim()}; tab="original"; showTab(); }));
+  d.querySelectorAll(".bc[data-s]").forEach(c=>c.addEventListener("click", ()=>{ const ids=c.dataset.s.split(" "); cur={...cur, s:ids[0], all:ids, word:c.dataset.w}; tab="original"; showTab(); }));
+}
+
+async function spectrumHtml(set){
+  const rows = await Promise.all(set.map(async code=>{ const t=await verseText(code,cur.b,cur.c,cur.v); return [code, t===null?null:clean(t,cur.b,TAGGED.has(code),false)]; }));
   let lastGroup=null, h="";
   for (const [code,text] of rows) {
     const grp = Object.entries(TRANSLATIONS).find(([,l])=>l.some(([c])=>c===code))[0].replace(/—/g,"").trim();
@@ -475,9 +552,131 @@ async function renderVersion(){
     const cls = SCRIPT[code]==="he"?"rtl":SCRIPT[code]==="el"?"grk":"";
     h += `<div class="vrow ${code===cur.code?"cur":""}"><div class="ab"><b>${code}</b>${code===cur.code?"current":""}</div><div class="t ${cls}">${text===null?`<span class="sub">not available</span>`:(text||`<span class="sub">—</span>`)}</div></div>`;
   }
-  const st=d.querySelector(".state"); if (st) st.outerHTML = h + `<p class="sub" style="margin-top:10px"><span class="tag src">Sourced</span> Verse-level only: bolls tags Strong's numbers in KJV, ASV, WLCa and SBLGNT, so words can't be aligned across the other translations.</p>`;
-  if (cur.s) d.querySelectorAll(`.vrow .w[data-s~="${cur.s}"]`).forEach(x=>x.classList.add("echo"));
-  d.querySelectorAll(".vrow .w").forEach(w=>w.addEventListener("click", ()=>{ cur={...cur, s:w.dataset.s.split(" ")[0], all:w.dataset.s.split(" "), word:w.textContent.trim()}; tab="original"; showTab(); }));
+  return h + `<p class="sub" style="margin-top:10px"><span class="tag src">Sourced</span> Verse-level only. Strong's numbers are carried by KJV, ASV, NET, WLCa and SBLGNT; the Braid lines those up word by word.</p>`;
+}
+
+// Split a Strong's-tagged verse into tokens: {t, n:[ids], lead, trail} for numbered words (a number belongs to the words
+// before it — bolls' rule), and {t, g:true} for NET's untagged words, which labs marks exactly (kept as <g>).
+function tokensOf(html, book){
+  const s = notesOf(html).s.replace(/<sup>.*?<\/sup>/gs,"").replace(/<(?!\/?S>|\/?g>)[^>]+>/g,"").replace(/[⸀-⸅°]/g,"").replace(/\(\d+:\d+\)\s*/g,"");
+  const pre=book<=39?"H":"G"; const out=[]; let buf=""; let m;
+  const re=/<g>(.*?)<\/g>|<S>(\d+)<\/S>|([^<]+)/gs;
+  const glue=x=>({ t:x, n:[], g:true });
+  while ((m=re.exec(s))) {
+    if (m[3]!==undefined) { buf+=m[3]; continue; }
+    if (m[1]!==undefined) { if (buf) out.push(glue(buf)); buf=""; out.push(glue(m[1])); continue; }
+    const id=pre+(+m[2]); const lead=buf.match(/^[\s\p{P}]*/u)[0], rest=buf.slice(lead.length), trail=rest.match(/[\s\p{P}]*$/u)[0], t=rest.slice(0,rest.length-trail.length);
+    if (!t) { if (!buf.trim() && out.length && out[out.length-1].n.length) out[out.length-1].n.push(id); else if (buf) out.push(glue(buf)); }
+    else out.push({ t, n:[id], lead, trail });
+    buf="";
+  }
+  if (buf) out.push(glue(buf));
+  return out;
+}
+const words = tk => tk.filter(x=>x.n.length);
+const wc = x => norm(x).split(" ").filter(Boolean).length;
+const NEG = /\b(not|no|nor|never|neither|none|nothing|nought|naught)\b/;
+// compare on content words ("he gave" = "gave"); if both are only small words, compare them whole
+const cmpKey = s => { const n=norm(s); const c=n.split(" ").filter(w=>w && !STOP.has(w)).join(" "); return c || n; };
+
+// Hebrew verse numbers often differ from English (Psalm titles, Malachi 4, Joel 2–3). Find the original verse whose
+// Strong's numbers best cover the English verse's: same chapter ±3 verses, then (OT only, if weak) the chapters either side.
+async function origVerse(b,c,v,eng){
+  const code=b<=39?"WLCa":"SBLGNT"; const want=new Set(eng.flatMap(x=>x.n));
+  const score=tk=>{ if (!want.size) return 0; const have=new Set(tk.flatMap(x=>x.n)); let k=0; for (const n of want) if (have.has(n)) k++; return k/want.size; };
+  const scan=async (cc, near)=>{ let ch; try { ch=await chapter(code,b,cc); } catch { return null; } let best=null;
+    for (const x of ch) { if (near && Math.abs(x.verse-v)>3) continue; const tk=words(tokensOf(x.text,b)), sc=score(tk);
+      if (!best || sc>best.sc || (sc===best.sc && near && Math.abs(x.verse-v)<Math.abs(best.v-v))) best={c:cc, v:x.verse, tk, sc}; }
+    return best; };
+  let best=await scan(c,true);
+  if ((!best || best.sc<0.5) && b<=39) for (const cc of [c-1,c+1]) if (cc>=1 && cc<=BOOKS[b-1][1]+1) { const o=await scan(cc,false); if (o && (!best || o.sc>best.sc)) best=o; }
+  return best && { ...best, code };
+}
+
+async function braidHtml(){
+  const ENG=["KJV","ASV","NET"]; const ot=cur.b<=39;
+  const full = await Promise.all(ENG.map(async c=>{ const t=await verseText(c,cur.b,cur.c,cur.v); return t===null?null:tokensOf(t,cur.b); }));
+  const tk = full.map(f=>f&&words(f));
+  const o = await origVerse(cur.b,cur.c,cur.v, tk[0]||tk[2]||tk[1]||[]);
+  if (!o || !o.tk.length) return `<div class="err">Couldn't find this verse in ${ot?"WLCa":"SBLGNT"} to build the braid.</div>`;
+  const tally = list => { const m=new Map(); for (const x of list) for (const n of new Set(x.n)) m.set(n,(m.get(n)||0)+1); return m; };
+  const oc = tally(o.tk), tc = tk.map(T=>T&&tally(T));
+  const used = ENG.map(()=>new Map()), claimed = ENG.map(()=>new Map()); let conv=0, lean=0, branch=0;
+  const cells = o.tk.map((w,ci)=>{
+    // k-th occurrence of a number in the original ↔ k-th in each translation — only when both use that number equally often.
+    // If the counts differ (KJV "should … perish" splits one Greek verb), that translation shows "?" and doesn't vote.
+    const r=[], unsure=[], joined=[];
+    tk.forEach((T,i)=>{
+      r[i]=""; if (!T) { r[i]=null; return; }
+      for (const n of w.n) { const hits=T.filter(x=>x.n.includes(n)); if (!hits.length) continue;
+        if (tc[i].get(n)!==oc.get(n)) { unsure[i]=true; r[i]=[...new Set(hits.map(x=>x.t))].join(" … "); return; }
+        const k=used[i].get(n)||0; used[i].set(n,k+1); const tok=hits[k];
+        if (claimed[i].has(tok)) { joined[i]=true; return; } claimed[i].set(tok,ci); r[i]=tok.t; return; }
+    });
+    const votes = r.map((x,i)=>(x===null||unsure[i])?null:x);
+    const voters = votes.filter(x=>x!==null), said=voters.filter(Boolean); const count={};
+    for (const x of said) count[cmpKey(x)]=(count[cmpKey(x)]||0)+1;
+    const top=Math.max(0,...Object.values(count)), win=top?Object.keys(count).find(k=>count[k]===top):"";
+    const st = voters.length<2 || !said.length ? "none" : (top===3) ? "conv" : top>=2 ? "lean" : "branch";
+    if (st==="conv") conv++; else if (st==="lean") lean++; else if (st==="branch") branch++;
+    const pick = top>=2 ? votes.find(x=>x && cmpKey(x)===win) : "";
+    return { w, r, unsure, joined, st, top, win, pick };
+  });
+  const ocls = ot?"rtl":"grk";
+  const line = (c,i) => c.r[i]===null ? `<span class="sub">n/a</span>` : c.unsure[i] ? `${esc(c.r[i])} <span class="q" title="${ENG[i]} uses this number a different number of times from the original, so the pairing is uncertain and it doesn't vote">?</span>`
+    : c.r[i] ? esc(c.r[i]) : `<span class="sub">${c.joined[i]?"joined to a box before":"—"}</span>`;
+  const cellHtml = c => {
+    const sel = cur.s && c.w.n.includes(cur.s) ? " sel" : "";
+    const lines = c.st==="conv" ? `<div class="r">${esc(c.r.find(Boolean))} <i>all 3</i></div>` : ENG.map((e,i)=>`<div class="r"><i>${e}</i>${line(c,i)}</div>`).join("");
+    return `<div class="bc ${c.st}${sel}" data-s="${c.w.n.join(" ")}" data-w="${esc(c.w.t)}" title="${c.st==="conv"?"All three agree":c.st==="lean"?"Two of three agree":c.st==="branch"?"All differ":"Too few clear renderings to compare"}"><div class="o ${ocls}">${esc(c.w.t)}</div><div class="sn">${c.w.n.join(" ")}</div>${lines}</div>`;
+  };
+  let h = "";
+  if (o.c!==cur.c || o.v!==cur.v) h += `<p class="sub"><span class="tag alg">Algorithmic</span> ${o.code} numbers this verse ${o.c}:${o.v}. Matched by Strong's overlap (${Math.round(o.sc*100)}% of the English verse's numbers found there).</p>`;
+  else if (o.sc<0.5) h += `<p class="sub"><span class="tag alg">Algorithmic</span> Weak match: only ${Math.round(o.sc*100)}% of the English verse's numbers appear in ${o.code} ${o.c}:${o.v}.</p>`;
+  if (blend) {
+    // Frame = NET's full sentence, untagged words included. A NET word tied to a box is swapped for the majority wording
+    // only when KJV and ASV agree with each other and NET differs.
+    const N=full[2]; let out="", swaps=0;
+    if (N && N.length) {
+      for (const tok of N) {
+        if (tok.g) { out+=esc(tok.t); continue; }
+        const ci=claimed[2].get(tok), c=ci===undefined?null:cells[ci];
+        if (c && c.top>=2 && c.pick && cmpKey(tok.t)!==c.win && wc(c.pick)<=wc(tok.t) && NEG.test(norm(c.pick))===NEG.test(norm(tok.t))) { swaps++; let pk=c.pick; const prev=norm(plain(out+tok.lead)).split(" ").pop(); if (prev && norm(pk).split(" ")[0]===prev) pk=pk.replace(/^\S+\s*/,""); // no "of of"
+          out+=esc(tok.lead)+`<span class="sw" title="NET: ${esc(tok.t)}">${esc(pk)}</span>`+esc(tok.trail); }
+        else out+=esc(tok.lead+tok.t+tok.trail);
+      }
+    } else out = esc(cells.map(c=>c.pick).filter(Boolean).join(" "));
+    h += `<div class="blend"><span class="tag alg">Algorithmic</span> <b>Word-for-word blend</b> <span class="sub">${swaps} swap${swaps===1?"":"s"} from NET</span><div class="bt">${out.replace(/\s+/g," ").trim()}</div><span class="how">Method: NET's sentence is the frame (the one modern text of the three). Where KJV and ASV agree with each other against NET, their wording is swapped in (underlined; hover or long-press shows NET's) — but only like-for-like: the incoming wording can't be longer than NET's, and a swap never adds or removes a "not", "no" or "nothing". Everything else stays NET, so the joins can still be rough — it's a reading aid, not a translation. Caveat: ASV (1901) is a revision of KJV, so their agreeing can be family likeness rather than independent consensus.</span></div>`;
+  }
+  h += `<div class="legend"><span class="bc conv">all agree ${conv}</span><span class="bc lean">two of three ${lean}</span><span class="bc branch">all differ ${branch}</span></div>`;
+  h += `<div class="braid ${ot?"rtl":""}">${cells.map(cellHtml).join("")}</div>`;
+  h += `<p class="sub"><span class="tag src">Sourced</span> Alignment comes from the Strong's numbers each text carries (KJV, ASV, WLCa, SBLGNT from bolls.life; NET from labs.bible.org). <span class="tag alg">Algorithmic</span> "Agree" means the same content words after lower-casing (small words like "the", "he", "of" ignored), so "thee"/"you" or "believeth"/"believes" count as different. A "?" means that translation uses the number a different number of times from the original, so it isn't paired or counted. Tap a box for its lexicon entry.</p>`;
+  return h;
+}
+
+const STOP = new Set("a an the and or but nor of to in into on at for with by from as is are was were be been being it its that which who whom this these those he him his she her they them their i me my we us our you your thou thee thy thine ye not no so then than unto upon shall will would there have has had do did".split(" "));
+async function overlayHtml(set){
+  const en = set.filter(c=>SCRIPT[c]==="en");
+  const rows = (await Promise.all(en.map(async code=>{ const t=await verseText(code,cur.b,cur.c,cur.v); return { code, text: t?plain(clean(t,cur.b,false,false)):"" }; }))).filter(r=>r.text);
+  if (rows.length<3) return `<div class="err">The overlay needs at least three English translations with this verse. Tick more under "Translations shown".</div>`;
+  for (const r of rows) { r.parts=r.text.split(/(\s+)/); r.keys=new Set(r.parts.map(norm).filter(k=>k && !STOP.has(k))); }
+  const n=rows.length;
+  const jac=(A,B)=>{ let i=0; for (const x of A) if (B.has(x)) i++; const u=A.size+B.size-i; return u?i/u:0; };
+  for (const r of rows) r.score = rows.filter(x=>x!==r).reduce((s,x)=>s+jac(r.keys,x.keys),0)/(n-1);
+  const med = rows.reduce((a,b)=>b.score>a.score?b:a);
+  const paint = r => r.parts.map(p=>{ const k=norm(p); if (!k || STOP.has(k)) return esc(p);
+    const share = rows.filter(x=>x!==r && x.keys.has(k)).length/(n-1);
+    const cls = share===0?"s0":share>=0.67?"s3":share>=0.34?"s2":"s1"; return `<span class="ov ${cls}">${esc(p)}</span>`; }).join("");
+  let h="";
+  if (blend) h += `<div class="blend"><span class="tag alg">Algorithmic</span> <b>Median reading: ${med.code}</b><div class="bt">${paint(med)}</div><span class="how">Method: content words compared pairwise (shared ÷ combined, ignoring words like "the", "and", "of"). ${med.code} has the highest average overlap with the other ${n-1} (${med.score.toFixed(2)}), so it sits closest to the middle of this group for this verse. It changes with the translations you tick.</span></div>`;
+  h += `<div class="legend"><span class="ov s3">most share</span><span class="ov s2">some share</span><span class="ov s1">one other</span><span class="ov s0">only this one</span></div>`;
+  let lastGroup=null;
+  for (const r of rows) {
+    const grp = Object.entries(TRANSLATIONS).find(([,l])=>l.some(([c])=>c===r.code))[0].replace(/—/g,"").trim();
+    if (grp!==lastGroup) { h += `<div class="spec">${esc(grp)}</div>`; lastGroup=grp; }
+    h += `<div class="vrow ${r===med?"cur":""}"><div class="ab"><b>${r.code}</b>${r.score.toFixed(2)}${r===med?" · median":""}</div><div class="t">${paint(r)}</div></div>`;
+  }
+  return h + `<p class="sub"><span class="tag alg">Algorithmic</span> Word overlap only — it sees shared wording, not shared meaning, so a paraphrase can say the same thing in different words and still score low.</p>`;
 }
 
 function renderSoon(){

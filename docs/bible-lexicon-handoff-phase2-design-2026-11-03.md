@@ -42,6 +42,18 @@ Tap any word in KJV/ASV/WLCa → chooser → Original shows number, lemma, gloss
 - Sorting is by shape (`notesOf()` in index.html). Version tab shows the text without markers.
 - Parked: NET notes need a second source (e.g. NET's own site/API), which would break the bolls-only decision — Ryan's call, not built.
 
+## Phase 3 — Braid, Overlay, Blend (4 Nov 2026, built)
+- **Decision (Ryan, 4 Nov):** labs.bible.org allowed as a second source, for NET only. It serves NET with a Strong's number on every word/phrase (CORS open). `chapter("NET",…)` now routes there; NET is tappable in the reader. Its note anchors carry no note text, so NET notes are still not shown.
+- Lives in the **Version tab** as three modes — Spectrum · Braid · Overlay — plus a Blend toggle (Claude's placement call; Ryan to confirm). localStorage: `lex.vmode`, `lex.blend`.
+- **Braid** (word for word): original word order (WLCa / SBLGNT); each box shows KJV/ASV/NET renderings; all agree / two of three / all differ. Tap a box → Original tab.
+  - Hebrew numbering ≠ English (Ps titles, Mal 4, Joel 2–3): original verse found by Strong's overlap (±3 verses, then neighbouring chapters); shift shown on screen. Verified Ps 51:1 → 51:3, Mal 4:1 → 3:19.
+  - A translation that uses a number a different number of times from the original shows "?" and doesn't vote (fixes KJV "should … perish", extra "his").
+  - Agreement compares content words (small words ignored); archaic forms count as different.
+- **Word-for-word blend:** NET's sentence as frame; a word swapped for KJV+ASV's shared wording only when they outvote NET, the swap is no longer than NET's wording, and it never adds/removes a negative. Caveat on screen: ASV revises KJV, so their agreement can be family likeness.
+- **Overlay + median reading** (thought for thought): content-word overlap across the ticked English translations; median = highest average overlap. Caveat on screen: sees wording, not meaning.
+- All tagged Algorithmic with the method shown. No Claude-judgement blend: the page is static and can't call Claude.
+- Test verses: Gen 1:1, Ps 23:1, Ps 51:1, Mal 4:1, John 1:1, John 3:16, Rom 8:28.
+
 ## Next
 1. Phase 3: amalgamation engine. Opus high; Fable only if bundling with Phase 4.
 2. Licensing review of bolls' copyrighted texts (now more pressing given NIV removal).
