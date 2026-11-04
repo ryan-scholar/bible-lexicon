@@ -55,6 +55,7 @@ Tap any word in KJV/ASV/WLCa → chooser → Original shows number, lemma, gloss
 - Test verses: Gen 1:1, Ps 23:1, Ps 51:1, Mal 4:1, John 1:1, John 3:16, Rom 8:28.
 
 ## Next
-1. Phase 3: amalgamation engine. Opus high; Fable only if bundling with Phase 4.
-2. Licensing review of bolls' copyrighted texts (now more pressing given NIV removal).
-3. Parked: NET translator notes (second source needed). "Translation history" on Original — needs a source or a Claude-judgement tag.
+1. Ryan road-tests Phase 3 on real reading; tune the blend rules from what feels off.
+2. Phase 4: commentaries (public domain first) + Bible Project / Practicing the Way links into the Commentary and Study tabs.
+3. Licensing review of bolls' copyrighted texts (now more pressing given NIV removal).
+4. Parked: NET translator notes (labs feed has anchors but no note text — another source needed). "Translation history" on Original — needs a source or a Claude-judgement tag.
