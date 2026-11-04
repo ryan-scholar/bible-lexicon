@@ -34,8 +34,15 @@ Tap any word in KJV/ASV/WLCa → chooser → Original shows number, lemma, gloss
 - Phone header now collapses to one summary line (passage + translations); tap to expand the pickers.
 - localStorage keys: `lex.state`, `lex.tab`, `lex.recent`, `lex.versions`, `lex.inter`.
 
+## Phase 2b — notes (4 Nov 2026, built)
+- Surveyed every picker translation on bolls (John 3, Gen 1, Ps 23 and others). **bolls carries no NET translator notes** and no `<f>`/`<e>` notes in any picker text. The only notes are in `<sup>` tags, which hold three different kinds of thing:
+  - KJV: 1611 margin notes, always shaped `keyword: Heb./Gr./or, …` → shown as a † at verse end; tap to open the note inline, tagged Sourced.
+  - ASV: a `<sup>` opening verse 1 = Psalm title → shown as an italic heading.
+  - CSB17 (ⓒ reference letters), SBLGNT/NA28 (variant signs, `[*]`): nothing behind them in bolls → dropped.
+- Sorting is by shape (`notesOf()` in index.html). Version tab shows the text without markers.
+- Parked: NET notes need a second source (e.g. NET's own site/API), which would break the bolls-only decision — Ryan's call, not built.
+
 ## Next
-1. Surface NET translator notes / footnotes (`<f>`, `<e>`, `<sup>` currently stripped).
-2. Phase 3: amalgamation engine. Opus high; Fable only if bundling with Phase 4.
-3. Licensing review of bolls' copyrighted texts (now more pressing given NIV removal).
-4. Parked: "translation history" on Original — needs a source or a Claude-judgement tag.
+1. Phase 3: amalgamation engine. Opus high; Fable only if bundling with Phase 4.
+2. Licensing review of bolls' copyrighted texts (now more pressing given NIV removal).
+3. Parked: NET translator notes (second source needed). "Translation history" on Original — needs a source or a Claude-judgement tag.

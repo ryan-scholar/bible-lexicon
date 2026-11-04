@@ -47,7 +47,10 @@ main{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-le
 .v .t.grk{font-size:1.05em}
 .v .t:empty::before{content:"—";color:var(--muted)}
 .t i{font-style:italic;color:var(--muted)}
-.t .fn{font-family:var(--mono);font-size:.65rem;color:var(--accent);vertical-align:super;margin-inline:1px}
+.t .fn{font-family:var(--mono);font-size:.72rem;color:var(--accent);vertical-align:super;margin-inline:2px;padding:0 3px;border-radius:2px;cursor:pointer}
+.t .fn:hover,.t .fn.on{background:var(--echo)}
+.t .ttl{display:block;font-size:.82em;font-style:italic;color:var(--muted);margin-bottom:2px}
+.t .note{direction:ltr;text-align:left;font-family:inherit;font-size:.86rem;line-height:1.45;background:var(--panel-2);border-left:2px solid var(--accent);border-radius:2px;padding:6px 10px;margin-top:6px;cursor:default}
 /* tappable words (texts with Strong's numbers) */
 .w{border-radius:2px;transition:background .12s}
 .w:hover{background:var(--panel-2)}
@@ -176,7 +179,7 @@ header.exp .sum .car{transform:rotate(180deg)}
 </main>
 
 <footer>
-  <div><span class="tag src">Sourced</span> Text and lexicon entries are fetched live from bolls.life each time; nothing is stored. Tap a word in KJV, ASV, WLCa or SBLGNT for its Strong's entry; tap a verse number for the verse across translations. Footnotes are still hidden in this phase.</div>
+  <div><span class="tag src">Sourced</span> Text and lexicon entries are fetched live from bolls.life each time; nothing is stored. Tap a word in KJV, ASV, WLCa or SBLGNT for its Strong's entry; tap a verse number for the verse across translations. A † marks a KJV margin note (the 1611 translators' "Heb." / "Gr." / "or," readings) — tap to open. bolls does not carry NET's translator notes, or the cross-references and textual-variant signs some texts point to, so those are not shown.</div>
   <div>Translation groupings (literal / middle / dynamic / paraphrase) follow the publishers' own descriptions and common classification; they are labels, not measurements.</div>
 </footer>
 
@@ -257,13 +260,28 @@ const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&
 
 // bolls markup: the Strong's tag FOLLOWS the word or phrase it belongs to ("thou art<S>2064</S>").
 // Numbers carry no testament prefix; books 1–39 are Hebrew (H), 40–66 Greek (G).
-function clean(html, book, tagged){
-  let s = String(html||"")
-    .replace(/<e>.*?<\/e>/gs,"").replace(/<f>.*?<\/f>/gs,"<span class=\"fn\">†</span>")
-    .replace(/<sup>.*?<\/sup>/gs,"").replace(/<m>.*?<\/m>/gs,"")
-    .replace(/<br\s*\/?>/gi," ");
+// Notes (Phase 2b). bolls carries three kinds of <sup>, sorted here by shape — verified on KJV/ASV/CSB17/SBLGNT/NA28, 4 Nov 2026:
+//   a <sup> opening verse 1 = a Psalm title (ASV)            → shown as a heading
+//   "keyword: Heb./Gr./or, …"  = 1611 margin note (KJV)       → † marker, tap to open
+//   anything else (ⓒ, [*], ⸀ …) = a reference letter or variant sign with nothing behind it in bolls → dropped
+function notesOf(html){
+  const notes=[]; let title="";
+  let s = String(html||"").replace(/<e>.*?<\/e>/gs,"").replace(/<m>.*?<\/m>/gs,"").replace(/<br\s*\/?>/gi," ");
+  s = s.replace(/^\s*<sup>(.*?)<\/sup>/s, (all,x)=>{ const t=strip(x); if (/\p{L}{2}/u.test(t) && !/^[^:]{1,60}:\s/.test(t)) { title=t; return ""; } return all; });
+  s = s.replace(/<(sup|f)>(.*?)<\/\1>/gs, (_,tag,x)=>{ const t=strip(x); if (tag==="f" || /^[^:]{1,60}:\s+\S/.test(t)) notes.push(t); return ""; });
+  return { s, notes, title };
+}
+function strip(x){ return String(x).replace(/<S>\d+<\/S>/gi,"").replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim(); }
+function clean(html, book, tagged, withNotes=true){
+  const n = notesOf(html);
+  const body = cleanText(n.s, book, tagged);
+  if (!withNotes) return body;
+  const mk = n.notes.map(t=>`<span class="fn" role="button" tabindex="0" data-note="${esc(t)}" title="Margin note">†</span>`).join("");
+  return (n.title?`<span class="ttl">${esc(n.title)}</span>`:"") + body + mk;
+}
+function cleanText(s, book, tagged){
   if (!tagged) {
-    return s.replace(/<S>\d+<\/S>/gi,"").replace(/<(?!\/?i\b|span class="fn"|\/span)[^>]+>/g,"").replace(/\s+/g," ").trim();
+    return s.replace(/<S>\d+<\/S>/gi,"").replace(/<(?!\/?i\b|\/span)[^>]+>/g,"").replace(/\s+/g," ").trim();
   }
   const pre = book<=39?"H":"G"; let out=""; let last=0; let lastSpanOpen=-1;
   const re=/<S>(\d+)<\/S>/gi; let m;
@@ -278,7 +296,7 @@ function clean(html, book, tagged){
     out += `${lead}<span class="w" data-s="${num}">${body}</span>`;
   }
   out += s.slice(last);
-  return out.replace(/<(?!\/?i\b|span class="fn"|span class="w"[^>]*|\/span)[^>]+>/g,"").replace(/[ \t\r\n]+/g," ").trim();
+  return out.replace(/<(?!\/?i\b|span class="w"[^>]*|\/span)[^>]+>/g,"").replace(/[ \t\r\n]+/g," ").trim();
 }
 
 let busy=false;
@@ -305,6 +323,7 @@ async function render(push=true){
       h += `<div class="v" data-v="${v}"><span class="n">${v}</span><div class="t a ${cls(s.a)}" data-abbr="${s.a}" data-code="${s.a}">${clean(a[v],s.b,TAGGED.has(s.a))}</div>${two?`<div class="t b ${cls(s.bb)}" data-abbr="${s.bb}" data-code="${s.bb}">${clean(b[v],s.b,TAGGED.has(s.bb))}</div>`:""}</div>`;
     }
     els.view.innerHTML = h+"</div>";
+    els.view.querySelectorAll(".fn").forEach((x,i)=>x.dataset.i=i);
     if (cur.s) echo(cur.s);
   } catch (e) {
     els.view.innerHTML = `<div class="err">Couldn't load that passage (${e.message}). Check the connection, or try another translation — not every translation carries every book.</div>`;
@@ -336,7 +355,19 @@ function openChooser(x,y,order,head){
 document.addEventListener("click", e=>{ if (chooser && !chooser.contains(e.target)) closeChooser(); });
 document.addEventListener("keydown", e=>{ if (e.key==="Escape"){ closeChooser(); if (document.body.classList.contains("open")) closeDrawer(); } });
 
+function toggleNote(fn){
+  const t=fn.closest(".t"); const open=t.querySelector(`.note[data-for="${fn.dataset.i}"]`);
+  t.querySelectorAll(".fn.on").forEach(x=>x.classList.remove("on")); t.querySelectorAll(".note").forEach(x=>x.remove());
+  if (open) return;
+  fn.classList.add("on");
+  const box=document.createElement("div"); box.className="note"; box.dataset.for=fn.dataset.i;
+  box.innerHTML=`<span class="tag src">Sourced</span> <b>${esc(t.dataset.code)} margin note</b> — ${esc(fn.dataset.note)}`;
+  t.appendChild(box);
+}
+els.view.addEventListener("keydown", e=>{ const fn=e.target.closest(".fn"); if (fn && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); toggleNote(fn); } });
 els.view.addEventListener("click", e=>{
+  const fn=e.target.closest(".fn"); if (fn){ e.stopPropagation(); closeChooser(); toggleNote(fn); return; }
+  if (e.target.closest(".note")) return;
   const w=e.target.closest(".w"), n=e.target.closest(".n"), t=e.target.closest(".t"); const vEl=e.target.closest(".v");
   if (!vEl) return; const s=state(); const v=+vEl.dataset.v;
   document.querySelectorAll(".w.sel").forEach(x=>x.classList.remove("sel"));
@@ -434,7 +465,7 @@ async function renderVersion(){
   d.innerHTML = `<h2>${ref}</h2><p class="sub">${cur.s?`${esc(cur.word)} · ${cur.s} highlighted where the text carries numbers`:"Most literal at the top, freest at the bottom"}</p>${pickHtml}<div class="state loading">Fetching ${set.length} translations…</div>`;
   d.querySelectorAll(".pick input").forEach(i=>i.addEventListener("change", ()=>{ picks = [...d.querySelectorAll(".pick input:checked")].map(x=>x.dataset.c); lsSet("lex.versions", picks); renderVersion(); }));
   const rows = await Promise.all(set.map(async code=>{
-    try { const ch=await chapter(code,cur.b,cur.c); const vv=ch.find(x=>x.verse===cur.v); return [code, vv?clean(vv.text,cur.b,TAGGED.has(code)):""]; }
+    try { const ch=await chapter(code,cur.b,cur.c); const vv=ch.find(x=>x.verse===cur.v); return [code, vv?clean(vv.text,cur.b,TAGGED.has(code),false):""]; }
     catch { return [code, null]; }
   }));
   let lastGroup=null, h="";
