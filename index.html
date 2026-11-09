@@ -109,6 +109,7 @@ body.open #drawer{display:flex}
 .tabs{display:flex;gap:0;flex:1;overflow-x:auto}
 .tabs button{border:0;background:transparent;color:var(--muted);padding:8px 9px;font-family:var(--serif);font-size:.9rem;border-radius:0;white-space:nowrap}
 .tabs button.on{color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent)}
+@media (max-width:440px){.tabs button{padding:8px 6px;font-size:.84rem}}
 .dbody{overflow:auto;padding:12px 14px;font-size:.95rem;flex:1;overscroll-behavior:contain}
 .dbody h2{font-size:1.25rem;margin:0 0 2px;font-weight:600}
 .dbody h3{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px;font-weight:500}
@@ -206,6 +207,7 @@ header.exp .sum .car{transform:rotate(180deg)}
         <button data-tab="version" role="tab">Version</button>
         <button data-tab="commentary" role="tab">Commentary</button>
         <button data-tab="study" role="tab">Study</button>
+        <button data-tab="devotion" role="tab">Devotion</button>
       </div>
       <button id="dclose" class="quiet" title="Close" aria-label="Close drawer">✕</button>
     </div>
@@ -434,11 +436,11 @@ els.view.addEventListener("click", e=>{
   if (w) { // word tap → Original first
     cur = { b:s.b, c:s.c, v, s:w.dataset.s.split(" ")[0], all:w.dataset.s.split(" "), word:w.textContent.trim(), code:t.dataset.code };
     w.classList.add("sel"); e.stopPropagation();
-    openChooser(e.clientX, e.clientY, ["original","version","commentary","study"], `${cur.word} · ${cur.s}`);
+    openChooser(e.clientX, e.clientY, ["original","version","commentary","study","devotion"], `${cur.word} · ${cur.s}`);
   } else if (n || t) { // verse tap → Version first
     cur = { b:s.b, c:s.c, v, s:null, word:"", code:(t&&t.dataset.code)||s.a };
     e.stopPropagation();
-    openChooser(e.clientX, e.clientY, ["version","original","commentary","study"], `${BOOKS[s.b-1][0]} ${s.c}:${v}`);
+    openChooser(e.clientX, e.clientY, ["version","original","commentary","study","devotion"], `${BOOKS[s.b-1][0]} ${s.c}:${v}`);
   }
 });
 
@@ -452,7 +454,7 @@ function clearEcho(){ document.querySelectorAll(".w.echo").forEach(x=>x.classLis
 
 function showTab(){
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on", b.dataset.tab===tab));
-  if (tab==="original") renderOriginal(); else if (tab==="version") renderVersion(); else if (tab==="commentary") renderCommentary(); else renderSoon();
+  if (tab==="original") renderOriginal(); else if (tab==="version") renderVersion(); else if (tab==="commentary") renderCommentary(); else if (tab==="devotion") renderDevotion(); else renderSoon();
 }
 
 // ---- Recent words strip ----
@@ -731,6 +733,36 @@ async function renderCommentary(){
   d.innerHTML = head + `<div class="cm">${body}</div>${net}`
     + `<p class="sub" style="margin-top:12px"><span class="tag src">Sourced</span> Fetched live from <a href="${HAO}" target="_blank" rel="noopener">bible.helloao.org</a> (${lic}${meta.web?`; <a href="${meta.web}" target="_blank" rel="noopener">original</a>`:""}). <span class="tag alg">Inferred</span> Commentaries often comment on a group of verses at once; the section shown is the one starting at or before this verse, running to where the next comment begins. The NET link opens netbible.org, which hosts the translators' notes; they aren't pulled into this page.</p>`;
   d.querySelectorAll(".modes button").forEach(x=>x.addEventListener("click", ()=>{ comm=x.dataset.c; lsSet("lex.comm",comm); renderCommentary(); }));
+}
+
+// ---- Devotion tab: My Utmost for His Highest (classic edition), link-out only ----
+// The day list (title, date, link) is fetched live from utmost.org's public feed and held in memory for this tab.
+// The devotion text stays on utmost.org (site is marked ©), so only the title and a link are shown.
+let utmost = null, dday = 0; // dday = offset in days from today
+async function utmostDays(){
+  if (utmost) return utmost;
+  const pages = await Promise.all([1,2,3,4].map(i=>retry(()=>fetch(`https://utmost.org/wp-json/wp/v2/classic?per_page=100&page=${i}&_fields=date,title,link`)).then(r=>r.ok?r.json():[])));
+  utmost = new Map();
+  for (const p of pages.flat()) { const md=p.date.slice(5,10); const had=utmost.get(md); if (!had || p.date>had.date) utmost.set(md, { date:p.date, title:p.title.rendered, link:p.link }); }
+  if (!utmost.size) { utmost=null; throw new Error("empty"); }
+  return utmost;
+}
+function plainTitle(h){ const t=document.createElement("textarea"); t.innerHTML=String(h).replace(/<[^>]+>/g,""); return t.value; }
+async function renderDevotion(){
+  const d=els.dbody, day=new Date(); day.setDate(day.getDate()+dday);
+  const md=`${String(day.getMonth()+1).padStart(2,"0")}-${String(day.getDate()).padStart(2,"0")}`;
+  const label=day.toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"});
+  const nav=`<div class="modes"><button data-d="-1">← Prev day</button><button data-d="0" class="${dday===0?"on":""}">Today</button><button data-d="1">Next day →</button></div>`;
+  d.innerHTML=`<h2>Devotion</h2><p class="sub">My Utmost for His Highest · Oswald Chambers</p>${nav}<p class="soon">Loading…</p>`;
+  let body;
+  try { const e=(await utmostDays()).get(md);
+    body = e ? `<p class="cv">${label}</p><h3 style="margin:4px 0 8px">${esc(plainTitle(e.title))}</h3><a class="out" href="${e.link}" target="_blank" rel="noopener">Read on utmost.org ↗</a>`
+             : `<p class="soon">No classic-edition reading listed for ${label}.</p>`;
+  } catch { body=`<div class="err">Couldn't reach utmost.org. Try again shortly.</div>`; }
+  if (tab!=="devotion") return;
+  d.innerHTML=`<h2>Devotion</h2><p class="sub">My Utmost for His Highest · Oswald Chambers</p>${nav}<div class="cm">${body}</div>`
+    + `<p class="sub" style="margin-top:12px"><span class="tag src">Sourced</span> Title and link fetched live from utmost.org (classic edition), matched by calendar day. The reading itself stays on utmost.org. This shows the reading for the day, not one matched to your passage.</p>`;
+  d.querySelectorAll(".modes button").forEach(x=>x.addEventListener("click", ()=>{ const n=+x.dataset.d; dday = n===0 ? 0 : dday+n; renderDevotion(); }));
 }
 
 function renderSoon(){
