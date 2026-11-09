@@ -144,6 +144,11 @@ details.pick label{font-family:var(--mono);font-size:.72rem;display:flex;gap:4px
 .recent button{font-size:.72rem;padding:3px 7px;font-family:var(--serif)}
 .recent button small{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-left:4px}
 .soon{color:var(--muted);font-style:italic}
+.cm p{margin:0 0 .7em;line-height:1.55}
+.cm .cv{font-family:var(--mono);font-size:.7rem;color:var(--muted);margin:10px 0 4px}
+.cm details.intro{margin:8px 0;border-left:2px solid var(--line);padding-left:10px}
+.cm details.intro summary{font-family:var(--mono);font-size:.74rem;color:var(--muted);cursor:pointer}
+.cm .out{display:inline-block;margin:6px 0;font-family:var(--mono);font-size:.78rem}
 @media (min-width:900px){
   body.open main{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:24px;align-items:start}
   body.open #drawer{position:sticky;top:70px;max-height:calc(100vh - 92px)}
@@ -210,7 +215,7 @@ header.exp .sum .car{transform:rotate(180deg)}
 </main>
 
 <footer>
-  <div><span class="tag src">Sourced</span> Text and lexicon entries are fetched live from bolls.life each time; nothing is stored. NET is fetched live from labs.bible.org, which carries its Strong's numbers. Tap a word in KJV, ASV, NET, WLCa or SBLGNT for its Strong's entry; tap a verse number for the verse across translations. A † marks a KJV margin note (the 1611 translators' "Heb." / "Gr." / "or," readings) — tap to open. bolls does not carry NET's translator notes, or the cross-references and textual-variant signs some texts point to, so those are not shown.</div>
+  <div><span class="tag src">Sourced</span> Text and lexicon entries are fetched live from bolls.life each time; nothing is stored. NET is fetched live from labs.bible.org, which carries its Strong's numbers. Tap a word in KJV, ASV, NET, WLCa or SBLGNT for its Strong's entry; tap a verse number for the verse across translations. A † marks a KJV margin note (the 1611 translators' "Heb." / "Gr." / "or," readings) — tap to open. bolls does not carry NET's translator notes (the Commentary tab links to them on netbible.org), or the cross-references and textual-variant signs some texts point to, so those are not shown.</div>
   <div>Translation groupings (literal / middle / dynamic / paraphrase) follow the publishers' own descriptions and common classification; they are labels, not measurements.</div>
 </footer>
 
@@ -447,7 +452,7 @@ function clearEcho(){ document.querySelectorAll(".w.echo").forEach(x=>x.classLis
 
 function showTab(){
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on", b.dataset.tab===tab));
-  if (tab==="original") renderOriginal(); else if (tab==="version") renderVersion(); else renderSoon();
+  if (tab==="original") renderOriginal(); else if (tab==="version") renderVersion(); else if (tab==="commentary") renderCommentary(); else renderSoon();
 }
 
 // ---- Recent words strip ----
@@ -677,6 +682,55 @@ async function overlayHtml(set){
     h += `<div class="vrow ${r===med?"cur":""}"><div class="ab"><b>${r.code}</b>${r.score.toFixed(2)}${r===med?" · median":""}</div><div class="t">${paint(r)}</div></div>`;
   }
   return h + `<p class="sub"><span class="tag alg">Algorithmic</span> Word overlap only — it sees shared wording, not shared meaning, so a paraphrase can say the same thing in different words and still score low.</p>`;
+}
+
+// ---- Commentary tab (Phase 4a) ----
+// Source: HelloAO Free Use Bible API (bible.helloao.org), fetched live, held in memory for this tab only.
+const USFM = ["GEN","EXO","LEV","NUM","DEU","JOS","JDG","RUT","1SA","2SA","1KI","2KI","1CH","2CH","EZR","NEH","EST","JOB","PSA","PRO","ECC","SNG","ISA","JER","LAM","EZK","DAN","HOS","JOL","AMO","OBA","JON","MIC","NAM","HAB","ZEP","HAG","ZEC","MAL","MAT","MRK","LUK","JHN","ACT","ROM","1CO","2CO","GAL","EPH","PHP","COL","1TH","2TH","1TI","2TI","TIT","PHM","HEB","JAS","1PE","2PE","1JN","2JN","3JN","JUD","REV"];
+const HAO = "https://bible.helloao.org";
+const ccache = new Map();
+let commList = null, comm = lsGet("lex.comm","tyndale");
+async function commentaries(){
+  if (commList) return commList;
+  const r = await retry(()=>fetch(`${HAO}/api/available_commentaries.json`));
+  if (!r.ok) throw new Error(r.status);
+  commList = (await r.json()).commentaries.map(c=>({ id:c.id, name:c.name, short:c.name.replace(/ (Bible|Old Testament)? ?Commentar(y|ies)$/,"").replace(/^Carl Friedrich Keil and Franz Delitzsch$/,"Keil-Delitzsch").replace(/^John Calvin.s$/,"Calvin").replace(/ Open Study Notes$/," (modern)"), lic:c.licenseUrl, web:c.website }));
+  commList.sort((a,b)=>(a.id==="tyndale"?-1:b.id==="tyndale"?1:0)); // decision: modern voice first
+  return commList;
+}
+async function commChapter(id,b,c){
+  const k=`${id}/${b}/${c}`; if (ccache.has(k)) return ccache.get(k);
+  const r = await retry(()=>fetch(`${HAO}/api/c/${id}/${USFM[b-1]}/${c}.json`));
+  const v = r.ok ? (await r.json()).chapter : null; // 404 = this commentary doesn't cover the book/chapter
+  ccache.set(k,v); return v;
+}
+function paras(t){ return String(t).split(/\n+/).filter(x=>x.trim()).map(x=>`<p>${esc(x)}</p>`).join(""); }
+function netLink(b,c,v){ return `https://netbible.org/bible/${encodeURIComponent(BOOKS[b-1][0]).replace(/%20/g,"+")}+${c}${v?":"+v:""}`; }
+async function renderCommentary(){
+  const d=els.dbody, b=cur.b, c=cur.c, v=cur.v, ref=`${BOOKS[b-1][0]} ${c}:${v}`;
+  const net = `<a class="out" href="${netLink(b,c,v)}" target="_blank" rel="noopener">NET translators' notes for ${ref} ↗</a>`;
+  d.innerHTML = `<h2>Commentary</h2><p class="sub">${ref}</p><p class="soon">Loading…</p>`;
+  let list; try { list = await commentaries(); } catch { d.innerHTML = `<h2>Commentary</h2><p class="sub">${ref}</p><div class="err">Couldn't reach bible.helloao.org. Try again shortly.</div>${net}`; return; }
+  if (!list.some(x=>x.id===comm)) comm = list[0].id;
+  const meta = list.find(x=>x.id===comm);
+  const modes = `<div class="modes">${list.map(x=>`<button data-c="${x.id}" class="${x.id===comm?"on":""}" title="${esc(x.name)}">${esc(x.short)}</button>`).join("")}</div>`;
+  const head = `<h2>Commentary</h2><p class="sub">${ref} · ${esc(meta.name)}</p>${modes}`;
+  const ch = await commChapter(comm,b,c);
+  if (tab!=="commentary" || cur.b!==b || cur.c!==c || cur.v!==v) return; // user moved on
+  let body;
+  if (!ch) body = `<p class="soon">${esc(meta.name)} has no entry for ${BOOKS[b-1][0]} ${c}. Try another commentary above.</p>`;
+  else {
+    const vs = ch.content.filter(x=>x.type==="verse").sort((x,y)=>x.number-y.number);
+    const i = vs.findLastIndex(x=>x.number<=v), e = vs[i], nxt = vs[i+1];
+    const span = e ? (e.number===v && (!nxt || nxt.number===v+1) ? `v.${v}` : `vv.${e.number}–${nxt?nxt.number-1:"end"}`) : "";
+    body = (ch.introduction ? `<details class="intro"><summary>Chapter ${c} introduction</summary>${paras(ch.introduction)}</details>` : "")
+      + (e ? `<p class="cv">Section ${span}${span!=="v."+v?` <span class="tag alg">Inferred</span>`:""}</p>${e.content.map(paras).join("")}`
+           : `<p class="soon">No comment on v.${v}. The first comment in this chapter starts at v.${vs[0]?vs[0].number:"—"}.</p>`);
+  }
+  const lic = meta.lic && meta.lic.includes("by-sa") ? `CC BY-SA 4.0` : `public domain`;
+  d.innerHTML = head + `<div class="cm">${body}</div>${net}`
+    + `<p class="sub" style="margin-top:12px"><span class="tag src">Sourced</span> Fetched live from <a href="${HAO}" target="_blank" rel="noopener">bible.helloao.org</a> (${lic}${meta.web?`; <a href="${meta.web}" target="_blank" rel="noopener">original</a>`:""}). <span class="tag alg">Inferred</span> Commentaries often comment on a group of verses at once; the section shown is the one starting at or before this verse, running to where the next comment begins. The NET link opens netbible.org, which hosts the translators' notes; they aren't pulled into this page.</p>`;
+  d.querySelectorAll(".modes button").forEach(x=>x.addEventListener("click", ()=>{ comm=x.dataset.c; lsSet("lex.comm",comm); renderCommentary(); }));
 }
 
 function renderSoon(){
